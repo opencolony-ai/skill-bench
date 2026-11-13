@@ -388,7 +388,7 @@ def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: 
         js, tools, ok, err, warm = _session(claude, named(PROMPT, name) if arm == "named" else PROMPT, where, model, timeout, 60)
         usage, errs = _usage(js), ([err] if err else [])
     else:
-        usage, warm, tools, errs, ok = {}, {}, [], [], True
+        usage, warm, tools, errs, ok, per_item = {}, {}, [], [], True, {}
         for c in cases:
             d = where / c.name
             d.mkdir()
@@ -397,11 +397,15 @@ def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: 
                 _install(name, d)
             js, t, k, e, w = _session(claude, named(ITEM_PROMPT, name) if arm == "named" else ITEM_PROMPT, d, model, timeout, 80)
             usage, warm, tools = _add_usage(usage, _usage(js)), _add_usage(warm, w), tools + t
+            per_item[c.name] = {"skill_used": _skill_used(t, name), "tokens": _usage(js).get("total_tokens")}
             ok = ok and k
             if e:
                 errs.append(f"{c.name}: {e}")
     out = {"started": started, "usage": usage, "warmup_usage": warm, "tools": _tool_counts(tools),
            "skill_used": _skill_used(tools, name), "cases": grade_arm(name, where)}
+    if exam:   # which items Claude opened the skill on, and what each used
+        for cn, extra in per_item.items():
+            out["cases"][cn].update(extra)
     wrote = any(c["outputs"] for c in out["cases"].values())
     if not wrote and (not ok or usage.get("permission_denials")):
         # nothing came of it and the tool refused it something: the environment, not the skill
