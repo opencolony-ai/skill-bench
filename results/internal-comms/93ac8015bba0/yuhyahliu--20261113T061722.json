@@ -1,0 +1,192 @@
+{
+ "schema": 1,
+ "skill": "internal-comms",
+ "version": "93ac8015bba0",
+ "author": "anthropics",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:17:22+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:16:37+00:00",
+   "usage": {
+    "total_tokens": 139046,
+    "input_tokens": 8,
+    "output_tokens": 2271,
+    "cache_write_tokens": 8256,
+    "cache_read_tokens": 128511,
+    "cost_usd": 0.0686011,
+    "turns": 11,
+    "duration_ms": 18816,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32768,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 5276,
+    "cache_read_tokens": 27486,
+    "cost_usd": 0.0238966,
+    "turns": 1,
+    "duration_ms": 3706,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "four_lines": false,
+      "emoji_team_dates_first": false,
+      "team_and_week": true,
+      "sections_in_order": false,
+      "one_to_three_sentences": false,
+      "no_other_formatting": false,
+      "has_the_numbers": true
+     },
+     "outputs": {
+      "update.md": "# Payments Platform – Weekly Update (Nov 3–7, 2026)\n\n## Progress\n- Apple Pay rollout reached 100% of iOS users on Wednesday, with no incidents.\n- Checkout success rate rose from 97.2% to 98.1% week over week, mostly due to the retry fix.\n- Closed 14 bugs; 3 remain open from the Black Friday load test.\n\n## Plans\n- Start Google Pay beta at 5% of Android users.\n- Begin moving the ledger to the new DB cluster.\n\n## Problems\n- PCI audit questionnaire is due Friday and will take ~2 days of engineering time.\n- Card vendor sandbox was down Monday and Tuesday, which blocked integration tests.\n- Sam was out sick Tuesday–Thursday, reducing capacity.\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "four_lines": false,
+      "emoji_team_dates_first": false,
+      "team_and_week": true,
+      "sections_in_order": false,
+      "one_to_three_sentences": false,
+      "no_other_formatting": false,
+      "has_the_numbers": true
+     },
+     "outputs": {
+      "update.md": "# Search Team – Weekly Update (Oct 27–31, 2026)\n\n## Progress\n- Shipped typo-tolerant matching to all users on Tuesday.\n- Zero-result searches fell from 8.4% to 5.9%.\n- p95 latency held at 180 ms despite the new matching.\n- Interviewed 4 candidates for the open relevance engineer role; 1 offer is out.\n\n## Plans\n- Start an A/B test of the new ranking model on 10% of traffic on Monday.\n- Build the synonyms admin page.\n\n## Problems\n- The click-log pipeline lost two days of data (Tue–Wed) after a schema change, so ranking evaluation for those days is unreliable. This could affect reading of the upcoming A/B test baseline.\n- The team is still one engineer short, as it has been since September.\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "four_lines": false,
+      "emoji_team_dates_first": false,
+      "team_and_week": true,
+      "sections_in_order": false,
+      "one_to_three_sentences": false,
+      "no_other_formatting": false,
+      "has_the_numbers": true
+     },
+     "outputs": {
+      "update.md": "# Mobile Team – Weekly Update (Nov 10–14, 2026)\n\n## Progress\n- Released Android 6.2 (offline drafts); crash-free sessions rose from 99.1% to 99.6%.\n- App Store rating is 4.6, up from 4.4 a month ago.\n\n## Plans\n- Ship iOS 6.2 once approved.\n- Start the tablet layout spike (2 engineers).\n\n## Problems\n- iOS 6.2 has been stuck in app review since Wednesday; the reviewer asked about the new camera permission.\n- The shared design system package bump to v3 broke 40+ snapshot tests, costing half a day.\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:17:01+00:00",
+   "usage": {
+    "total_tokens": 178643,
+    "input_tokens": 12,
+    "output_tokens": 2482,
+    "cache_write_tokens": 10097,
+    "cache_read_tokens": 166052,
+    "cost_usd": 0.0818372,
+    "turns": 14,
+    "duration_ms": 20404,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32872,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4820,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0221286,
+    "turns": 1,
+    "duration_ms": 2728,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 7,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "four_lines": true,
+      "emoji_team_dates_first": true,
+      "team_and_week": true,
+      "sections_in_order": true,
+      "one_to_three_sentences": true,
+      "no_other_formatting": true,
+      "has_the_numbers": true
+     },
+     "outputs": {
+      "update.md": "💳 Payments Platform (Nov 3–7, 2026)\nProgress: Apple Pay reached 100% of iOS users on Wednesday with no incidents. Checkout success rate rose from 97.2% to 98.1% week over week, mostly due to the retry fix, and we closed 14 bugs.\nPlans: Start the Google Pay beta at 5% of Android users and begin moving the ledger to the new DB cluster.\nProblems: 3 bugs from the Black Friday load test remain open. The card vendor sandbox was down Mon–Tue, which blocked integration tests, and the PCI audit questionnaire (due Friday) is taking ~2 days of eng time.\n"
+     }
+    },
+    "case-2": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "four_lines": true,
+      "emoji_team_dates_first": true,
+      "team_and_week": true,
+      "sections_in_order": true,
+      "one_to_three_sentences": true,
+      "no_other_formatting": true,
+      "has_the_numbers": true
+     },
+     "outputs": {
+      "update.md": "🔍 Search (Oct 27–31, 2026)\nProgress: Shipped typo-tolerant matching to all users on Tuesday, cutting zero-result searches from 8.4% to 5.9% while p95 latency held at 180 ms. Interviewed 4 candidates for the open relevance engineer role and extended 1 offer.\nPlans: Start an A/B test of the new ranking model on 10% of traffic Monday and build the synonyms admin page.\nProblems: The click-log pipeline lost two days of data (Tue–Wed) after a schema change, so ranking evaluation for those days is unreliable. The team is still one engineer short, as it has been since September.\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "four_lines": true,
+      "emoji_team_dates_first": true,
+      "team_and_week": true,
+      "sections_in_order": true,
+      "one_to_three_sentences": true,
+      "no_other_formatting": true,
+      "has_the_numbers": true
+     },
+     "outputs": {
+      "update.md": "📱 Mobile (Nov 10–14, 2026)\nProgress: Released Android 6.2 with offline drafts; crash-free sessions rose from 99.1% to 99.6%. App Store rating is 4.6, up from 4.4 a month ago.\nPlans: Ship iOS 6.2 once approved and start a tablet layout spike with 2 engineers.\nProblems: iOS 6.2 has been stuck in app review since Wednesday, as the reviewer asked about the new camera permission. The design system v3 bump broke 40+ snapshot tests and cost about half a day.\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}

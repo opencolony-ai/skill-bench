@@ -1,0 +1,180 @@
+{
+ "schema": 1,
+ "skill": "grilling",
+ "version": "2a88d2aae484",
+ "author": "mattpocock",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:19:12+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:17:30+00:00",
+   "usage": {
+    "total_tokens": 144154,
+    "input_tokens": 8,
+    "output_tokens": 5255,
+    "cache_write_tokens": 10659,
+    "cache_read_tokens": 128232,
+    "cost_usd": 0.10802519999999999,
+    "turns": 11,
+    "duration_ms": 47072,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32761,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4709,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0216846,
+    "turns": 1,
+    "duration_ms": 3371,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "question_format": false,
+      "numbered_from_1": true,
+      "recommended_answers": false,
+      "asks_questions": true,
+      "about_the_plan": true
+     },
+     "outputs": {
+      "questions.md": "# Questions: MySQL → Postgres migration (round 1)\n\nEach question has my recommended default in *italics*, so you can answer \"agree\" where it fits.\n\n## Rollback (the biggest hole)\n1. After Saturday's cutover the app writes to Postgres. If you roll back to MySQL on Sunday, what happens to the writes made in between? As written, they are lost. Is losing them acceptable, or do you need reverse replication or dual writes? *Define a point of no return and a rollback window, and decide up front what is lost.*\n2. Who decides to roll back, and by what criteria (error rate, data mismatch, time limit)? Has the rollback been rehearsed end to end?\n\n## Downtime and data volume\n3. How big is the database, and how long do dump and restore take? Have you timed it on production-sized data? Does it fit in the window between 02:00 and when users wake up? *Do a full timed rehearsal.*\n4. Is a hard write-stop acceptable for all customers and integrations (APIs, webhooks, mobile clients, cron jobs)? What do they see during the stop? What happens to queued or retried writes?\n5. Would a continuous-replication approach (e.g. CDC/pgloader/DMS) avoid the long freeze? If not, why not?\n\n## \"The ORM hides most differences\"\n6. What evidence is there for this? Does the codebase contain raw SQL, stored procedures, triggers, views, or MySQL-specific functions (`GROUP_CONCAT`, `ON DUPLICATE KEY`, `IFNULL`, `LIMIT` quirks)? *Grep and list them before committing.*\n7. Known semantic differences: case-insensitive string comparison and collations, zero dates and lax mode, silent truncation, `utf8` vs `utf8mb4`, unsigned ints, `TINYINT(1)` booleans, auto-increment vs sequences (sequences must be reset after restore), timestamp/timezone handling, GROUP BY strictness, and transaction isolation defaults. Which of these have you checked against your data and queries?\n8. Does your test suite run against Postgres today? What fraction passes? \"Fix whatever breaks in the first week\" implies broken behavior in production. What is the tolerance for that, especially for silent wrong results rather than errors?\n9. How will you verify that the data is correct after restore (row counts, checksums, sampled comparisons)? Who signs off before you reopen writes?\n\n## Performance\n10. Query plans and indexes behave differently. Have you load-tested your top queries on Postgres? Connection handling also differs (Postgres connections are costly, so do you need PgBouncer?). Are config, vacuum, and backups set up?\n\n## Reporting on the old replica\n11. The MySQL replica replicates from a primary that will no longer receive writes. After cutover it is frozen at Saturday's data. Reporting for a month would read stale data. Is that intended? If not, what feeds it?\n12. Does reporting read the new data through any other path? Which reports, and who consumes them (finance, customers)? What happens at month end when MySQL is turned off?\n\n## Other dependencies and ownership\n13. What else connects to the database: BI tools, ETL, analytics, backups, monitoring, admin scripts, other services, third-party integrations? Is there a full inventory?\n14. Who is on call over the weekend, and what is the go/no-go checklist? Has the business been told about the window?\n15. Why migrate at all, and what is the success criterion? Is this the cheapest way to get it?\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "question_format": false,
+      "numbered_from_1": true,
+      "recommended_answers": false,
+      "asks_questions": true,
+      "about_the_plan": true
+     },
+     "outputs": {
+      "questions.md": "# Questions: per-seat pricing (round 1)\n\n## Who wins and who loses\n1. At $12/seat, the break-even against $49 is about 4.08 seats. Anyone with 5 or more active users pays more, and a 20-seat team goes from $49 to $240 (about 5x). What does the customer distribution look like? How many customers, and how much revenue, sit above and below 4 seats? *Run this on real data before anything else.*\n2. What is the goal: more revenue, fairer pricing, or reduced churn from small customers? Does the model hit that goal? Customers with 1–3 seats would get a discount, so what is the net revenue effect of the switch?\n3. Have you spoken to any large customers? A 5x increase on a 30-day-notice email invites cancellations and renegotiation. What churn did you assume? What is the break-even churn?\n\n## No grandfathering and notice\n4. Why no grandfathering at all? Would a transition (a price cap in year 1, a phased ramp, or grandfathering for existing annual or long-tenure customers) cost much? *Consider capping increases, e.g. at 2x, for the first year.*\n5. Two weeks' notice: do your contracts or terms of service require more (annual contracts, notice clauses)? Are any customers prepaid for months beyond January 1? Are any on contracts with a fixed price? Is the notice period legally sufficient in the jurisdictions you sell in?\n6. Is the email enough? Does it state each customer's own new price, or only the general change? Who sends it, and who handles the replies? January 1 falls on a holiday, so who is available to handle the fallout?\n\n## Seat definition\n7. \"Active users in the last 30 days, counted on the billing date\": what counts as active (login, any API call, a service account, a bot)? Can customers game it by deactivating users the day before billing and reactivating them afterward? Or does a seasonal spike land on the billing date and stick for the month?\n8. Are customers billed at the peak, the average, or the snapshot? What about someone who adds 10 people mid-month? Are there proration, credit, or refund rules?\n9. Can the customer see and predict their count before being charged? Without a seat dashboard or a preview invoice, expect a wave of disputes. How do customers contest a count?\n10. Are there minimums or maximums (a floor so a one-user customer pays at least something, a cap for very large teams)? Are inactive-but-paid accounts such as read-only viewers or contractors counted?\n\n## Mechanics\n11. Which billing system will carry this? Can it handle usage-based or per-seat billing, and can it compute active users on the billing date? Has it been tested with the existing customers' data, including those billed annually, mid-cycle, or by invoice?\n12. How are existing customers \"moved automatically\"? What happens to failed payments from the larger charge (card limits, fraud flags, approval limits on corporate cards)? What about customers who pay by invoice or purchase order?\n13. Taxes, currencies and regional pricing: is it $12 everywhere?\n\n## Risk and fallback\n14. What are the metrics you watch (cancellations, downgrades, support tickets, seat counts falling), and what threshold makes you pause or adjust? Is the change reversible once emailed?\n15. Can you test on a cohort first (new customers only, or a slice of existing customers)? Why does the whole base need to move on one day?\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "question_format": false,
+      "numbered_from_1": true,
+      "recommended_answers": false,
+      "asks_questions": true,
+      "about_the_plan": true
+     },
+     "outputs": {
+      "questions.md": "# Questions: offline mode for the field app (round 1)\n\n## \"Server keeps whatever arrives last\"\n1. \"Last to arrive\" is not \"last edited\". If two inspectors (or one inspector on two phones) edit the same form offline, whichever phone reconnects last overwrites the other, and the earlier work is lost silently. Can the same record be edited by more than one person or device? If so, what is the rule: last edit time, per-field merge, or flag a conflict for a human? *Use a per-record version number and reject or flag stale writes instead of overwriting.*\n2. Phone clocks are unreliable. If you move to \"last edit wins\", which clock do you trust?\n3. What if an office user edits the same record on the server while the inspector is offline? Does the upload overwrite the office edit?\n4. Is any of this data legal, safety, or compliance evidence (inspection results)? If so, silent overwrite is a serious problem. Do you need an audit trail or history of versions?\n\n## Upload reliability\n5. What happens if an upload is interrupted halfway (tunnel, bad signal)? Is it retried? Is a retry idempotent, or will it create duplicate forms? *Give each form a client-generated unique ID.*\n6. Is each form uploaded atomically with its photos? Can the server end up with a form that references photos that never arrived?\n7. What does the inspector see? Is there a visible \"pending / uploaded / failed\" status? How do they know the work is safely on the server before they delete anything or the draft expires?\n8. What if the server rejects a form (validation changed, app version mismatch, record deleted or reassigned)? Where does it go, and who sees the error?\n\n## Photos at full resolution\n9. How large are the photos, and how many per form? Modern phones produce 3–12 MB each. A day of inspections could be hundreds of MB over mobile data. The phone may reconnect on a weak connection: does upload wait for Wi-Fi? Can the user pause or choose?\n10. Is full resolution actually needed (hairline cracks, serial numbers), or is a compressed version enough? Storage and bandwidth costs on the server also grow. Is there a limit?\n11. Do uploads run in the background if the app is closed? Does the OS kill them? Are photos kept in a place that survives app restarts?\n\n## 30 days of drafts on the phone\n12. What is the 30-day rule counted from (creation, last edit)? What happens to a draft that was never uploaded when day 30 arrives: silently deleted? An inspector on leave or with a broken phone loses the work. *Never delete anything that has not been confirmed uploaded.*\n13. Is the data encrypted on the device? What happens with a lost or stolen phone, or a shared device? Can you wipe remotely? Do forms contain personal or sensitive information?\n14. How much phone storage do 30 days of forms and full-resolution photos need? What happens when the phone is full: does saving fail silently?\n\n## Data consistency and versions\n15. Forms and reference data (templates, customer lists, assets) may change while the phone is offline. Which version of the form does an inspector fill out? What happens when the app is updated while old drafts exist, and the schema changes?\n16. How long are inspectors typically offline: hours or weeks? Is 30 days based on real usage?\n\n## Scope\n17. Which features work offline: only form filling, or also lookups, assignments, and login? What happens when the auth token expires while offline? Can inspectors log in with no signal?\n18. How will this be tested: airplane mode, flaky networks, killing the app mid-save, low storage, and clock changes?\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:18:21+00:00",
+   "usage": {
+    "total_tokens": 180874,
+    "input_tokens": 12,
+    "output_tokens": 5892,
+    "cache_write_tokens": 12086,
+    "cache_read_tokens": 162884,
+    "cost_usd": 0.1235764,
+    "turns": 13,
+    "duration_ms": 49734,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32828,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4776,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0219526,
+    "turns": 1,
+    "duration_ms": 2407,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "question_format": true,
+      "numbered_from_1": true,
+      "recommended_answers": true,
+      "asks_questions": true,
+      "about_the_plan": true
+     },
+     "outputs": {
+      "questions.md": "# Round 1: MySQL → Postgres migration\n\n❓ **Q1** - **Downtime budget**: The plan stops writes at 02:00 Saturday, then dumps and restores. Is the full outage (dump + restore + verification + DNS/app switch) acceptable, and do you know how long it takes at your data size? Should we do a timed rehearsal on a production-sized copy before committing?\n\n➡️ Yes, an outage is acceptable only if a full rehearsal on a prod-size copy shows it fits a fixed window (e.g. 4 hours) with margin. Don't commit before that rehearsal.\n\n---\n\n❓ **Q2** - **\"The ORM hides most differences\"**: Does the app contain raw SQL, stored procedures, triggers, or MySQL-specific behavior (case-insensitive collation, `AUTO_INCREMENT`, zero dates, silent truncation, `GROUP BY` leniency, `ON DUPLICATE KEY`, implicit type coercion, JSON/enum types)? Should we audit for these and run the full test suite against Postgres before cutover, rather than fixing breakage in production during week one?\n\n➡️ Yes: audit raw SQL and MySQL-isms now, and run the test suite on Postgres in CI before cutover. \"Fix it in week one\" is replaced by a pre-cutover gate.\n\n---\n\n❓ **Q3** - **Data fidelity check**: How will you prove the restored data is correct (row counts, checksums, sampled comparisons, sequence/ID values, character encoding, timestamps/timezones)? Who signs off before the app points at Postgres?\n\n➡️ Run automated row count and checksum comparisons per table plus sequence resets and an encoding/timezone check; a named person signs off before the switch.\n\n---\n\n❓ **Q4** - **Rollback after writes happen**: \"Point the app back at MySQL\" works only if no writes have hit Postgres. Once users write to Postgres, MySQL is stale and rollback loses data. What is the point of no return, and what happens to writes made on Postgres if you roll back? Should we add reverse replication/dual-writes, or define a short go/no-go window after which rollback is not an option?\n\n➡️ Define an explicit go/no-go checkpoint (e.g. 2 hours of smoke tests with the app read-only or low-traffic), and keep MySQL untouched until then. Past it, roll forward only, unless you can afford reverse replication.\n\n---\n\n❓ **Q5** - **Reporting on the old replica**: The MySQL replica stops receiving updates once writes move to Postgres, so reporting jobs would read frozen data for a month. Is that intended? Do reports need current data?\n\n➡️ Not intended. Either repoint reports to a Postgres replica at cutover, or sync the data continuously. A stale replica is wrong for any report needing fresh data.\n\n---\n\n❓ **Q6** - **Other consumers of the database**: Besides the app and reporting jobs, what else connects (BI tools, cron scripts, ETL, backups, monitoring, admin tools, third-party integrations)? Should we inventory them before the date?\n\n➡️ Yes, inventory all connection sources (from MySQL connection logs) and give each a migration owner.\n\n---\n\n❓ **Q7** - **Operational readiness**: Do you have Postgres backups with a tested restore, monitoring, connection pooling, tuned config, and query performance comparisons for your top queries (the planner behaves differently from MySQL)? Does the team have Postgres on-call experience?\n\n➡️ Treat these as cutover prerequisites: tested backup restore, monitoring and alerts, and a benchmark of the top queries on a prod-like load.\n\n---\n\n❓ **Q8** - **Timing and staffing**: Why a weekend, and who is on call during and after? What are the abort criteria, and who decides?\n\n➡️ Name a cutover owner with sole abort authority, a written runbook with abort criteria, and staff the first 48 hours.\n"
+     }
+    },
+    "case-2": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "question_format": true,
+      "numbered_from_1": true,
+      "recommended_answers": true,
+      "asks_questions": true,
+      "about_the_plan": true
+     },
+     "outputs": {
+      "questions.md": "# Round 1: Per-seat pricing\n\n❓ **Q1** - **Goal of the change**: What is this change meant to achieve (more revenue, fairer pricing for small teams, expansion revenue from large ones)? What is the target, and how will you judge success or failure after launch?\n\n➡️ State one primary goal with a measurable target (e.g. net revenue retention or ARPA up X% with churn no more than Y%), and a review date.\n\n---\n\n❓ **Q2** - **Who pays more or less**: At $12/seat, break-even with $49 is about 4 seats. Customers with 5 or more active users pay more, and a 50-seat customer goes from $49 to $600 (12x). Do you know your seat distribution? Do you accept this, and should we model revenue and churn by segment before committing?\n\n➡️ No. Pull the active-user distribution now and model revenue and expected churn per segment. Don't commit until you've seen how many customers rise by more than, say, 2x.\n\n---\n\n❓ **Q3** - **No grandfathering**: Is it deliberate that large increases hit everyone on Jan 1 with only two weeks' notice? Consider grandfathering existing customers for 6–12 months, a phased ramp, or a price cap on the first increase.\n\n➡️ Reverse it: grandfather or cap increases (e.g. max +50% in year one) for existing customers, and put new customers on per-seat immediately.\n\n---\n\n❓ **Q4** - **Contract and legal constraints**: Do any customers have annual prepaid plans, contracts, or price locks? Do your terms of service require more than two weeks' notice, or consent for a price change? Are there regional rules (e.g. EU consumer rules)?\n\n➡️ Check the terms and contracts first. Annual or contract customers should move at renewal, and notice should be 30-60 days or whatever the terms require.\n\n---\n\n❓ **Q5** - **Notice timing**: Two weeks before Jan 1 means emails go out during the holiday period (~Dec 18) when many people are away. Is that intended? Will customers also see their own projected bill?\n\n➡️ Send at least 45 days ahead (mid-November, which is now), with a personalized projected bill and an account-manager contact for large accounts.\n\n---\n\n❓ **Q6** - **Seat definition and gaming**: \"Active users in the last 30 days, counted on the billing date\" is a snapshot. Customers can drop users just before the billing date and re-add them later, and seasonal or occasional users are undercounted. What counts as \"active\" (login, any action)? Do service accounts, API users, or admins count? Should it be the peak or average over the period instead?\n\n➡️ Use the peak (or 30-day average) of distinct active users over the billing period, defined explicitly in terms, excluding service accounts and including them only if they consume resources.\n\n---\n\n❓ **Q7** - **Mid-period changes and edge cases**: What happens with customers who add users mid-month (prorate or wait for the next cycle), customers with 0 active users (is there a minimum charge?), paused accounts, refunds, and disputes about the count?\n\n➡️ Set a minimum of 1 seat (or a platform minimum), bill growth in arrears, and define a dispute and credit process.\n\n---\n\n❓ **Q8** - **Billing system readiness**: Can your billing provider do metered or per-seat billing with this seat computation, invoice previews, and automatic migration? Has the migration been tested on a copy of real accounts? What is the rollback if invoices are wrong on Jan 1?\n\n➡️ Run a dry run with invoice previews for all accounts in December, compare against the model, and keep a way to void and reissue.\n\n---\n\n❓ **Q9** - **Support and churn handling**: Who handles the surge of complaints, what is the retention offer playbook, and do you have a plan for customers who cancel in response?\n\n➡️ Prepare a support FAQ, a pre-approved discount or retention script for large increases, and a daily churn dashboard for the first 60 days.\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "question_format": true,
+      "numbered_from_1": true,
+      "recommended_answers": true,
+      "asks_questions": true,
+      "about_the_plan": true
+     },
+     "outputs": {
+      "questions.md": "# Round 1: Offline mode for the field app\n\n❓ **Q1** - **\"Server keeps whatever arrives last\"**: Arrival order is not edit order. If an inspector edits a form on a phone offline and a colleague (or the same inspector on a second device, or the office) edits the same form meanwhile, the stale-but-late upload silently overwrites the newer one. Can the same record be edited by more than one person or device?\n\n➡️ Assume yes. Don't use arrival order. Use a per-record version or base revision and the device's edit timestamp, detect conflicts on upload, and either merge by field or flag the record for a human to resolve. Never overwrite silently.\n\n---\n\n❓ **Q2** - **Data you can't afford to lose**: Inspection forms may be legal or safety records. If a phone is lost, broken, or wiped before it syncs, the data is gone. What is the consequence of losing a day's inspections, and does it justify mitigations (an upload prompt or warning for unsynced forms, background sync, an \"unsynced items\" badge, a manual export)?\n\n➡️ Yes. Show unsynced counts prominently, sync in the background as soon as there's connectivity, and warn on logout or app uninstall while data is unsynced.\n\n---\n\n❓ **Q3** - **Full-resolution photos**: Modern phone photos are 3–12 MB each. A day of inspections could be hundreds of MB, filling phone storage offline and failing or stalling on weak cellular connections. How many photos per inspection, and do you need full resolution (e.g. for evidence/defects)?\n\n➡️ Resize on-device to a sensible max (e.g. 2048px) by default, keep the original only where an inspection type requires it, and upload photos separately from the form data, in resumable chunks, over Wi-Fi if the user prefers.\n\n---\n\n❓ **Q4** - **Upload reliability**: \"Uploads everything\" when back online: what happens if the connection drops mid-upload, the server rejects a form (validation, schema change), or the same form uploads twice after a retry? Is the upload atomic per form, retried, and idempotent?\n\n➡️ Upload per form with a client-generated unique ID (making retries idempotent), retry with backoff, resumable photos, and a visible failed state with a reason and a retry action.\n\n---\n\n❓ **Q5** - **30-day draft retention**: What happens at day 30 to a draft that hasn't been synced? Are unsynced forms deleted? Is 30 days counted from creation, last edit, or last sync? And what about synced forms on the phone?\n\n➡️ Never auto-delete unsynced data. Apply the 30-day expiry only to forms confirmed synced; unsynced forms stay until uploaded or explicitly discarded by the user.\n\n---\n\n❓ **Q6** - **Security of data at rest**: Forms and photos sit on personal or shared phones for up to 30 days. Is the data sensitive (people, addresses, site details)? Is device encryption, an app lock, and remote wipe required, and do any compliance rules apply? What about shared devices and user logout?\n\n➡️ Encrypt the local store, require an app PIN or biometric, and clear local data on logout after sync. Confirm the compliance requirements with the data owner.\n\n---\n\n❓ **Q7** - **Auth and app versions while offline**: What happens if the session token expires while the phone is offline for days, so uploads fail on reconnect? What if the form schema or app version changes while a draft is stored (old drafts vs a new server schema)?\n\n➡️ Use long-lived refresh tokens that allow queued uploads to be authenticated on reconnect, and version every draft with its schema so the server can accept or migrate old versions.\n\n---\n\n❓ **Q8** - **Reference data and testing**: Do inspectors need server data offline (assignments, site lists, form templates, previous inspections), and how is that cached and refreshed? How will you test real conditions (airplane mode, flaky 2G, low storage, clock skew on phones)?\n\n➡️ Define the minimal offline data set to download ahead of a visit, and build a test matrix with flaky-network and low-storage cases before release. Don't trust device clocks for ordering; record server receipt time alongside.\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}

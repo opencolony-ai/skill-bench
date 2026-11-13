@@ -1,0 +1,192 @@
+{
+ "schema": 1,
+ "skill": "pr",
+ "version": "a9ffcd1d7b75",
+ "author": "mattpocock",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:18:42+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:17:53+00:00",
+   "usage": {
+    "total_tokens": 139691,
+    "input_tokens": 8,
+    "output_tokens": 2720,
+    "cache_write_tokens": 8490,
+    "cache_read_tokens": 128473,
+    "cost_usd": 0.0740233,
+    "turns": 11,
+    "duration_ms": 20949,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32771,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4719,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0217246,
+    "turns": 1,
+    "duration_ms": 2629,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "sections": false,
+      "no_preamble": false,
+      "summary_visual": false,
+      "before_after": false,
+      "door": false,
+      "blast_radius": false,
+      "carries_the_evidence": true
+     },
+     "outputs": {
+      "PR_BODY.md": "## Drop `users.legacy_email`\n\nMigration `0042_drop_legacy_email.py` copies any remaining `legacy_email` into `email`, then drops the `legacy_email` column. The code that read the column is removed.\n\n### What the migration does\n- `upgrade()` runs `UPDATE users SET email = legacy_email WHERE email IS NULL AND legacy_email IS NOT NULL`, then `op.drop_column(\"users\", \"legacy_email\")`.\n- Only rows with no `email` are backfilled. If a user has both columns set and they differ, `email` wins and the `legacy_email` value is discarded.\n\n### Irreversible\n- `downgrade()` raises `NotImplementedError`, because the `legacy_email` values are not kept. Once this is applied, rolling back the schema is not possible. Restoring the data would need a database backup taken before the migration.\n- Take a backup before running this in any environment that matters.\n\n### Testing\n- Before: `test_login_uses_email` failed for 212 fixture users whose only address was in `legacy_email`.\n- After: 418 tests pass.\n- I haven't run the migration against production-sized data. Before deploying, check how many real users have `email IS NULL` and `legacy_email` set, and how many have two different values.\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "sections": false,
+      "no_preamble": false,
+      "summary_visual": false,
+      "before_after": false,
+      "door": false,
+      "blast_radius": false,
+      "carries_the_evidence": true
+     },
+     "outputs": {
+      "PR_BODY.md": "## Replace three button styles with one `<Button variant>` component\n\n`.btn-primary`, `.btn-cta` and `.button-main` are replaced by a single `<Button variant>` component. No visual change is intended.\n\n```diff\n-<a class=\"btn-cta\" href=\"/signup\">Sign up</a>\n+<Button variant=\"primary\" href=\"/signup\">Sign up</Button>\n```\n\n### Testing\n- Visual regression suite before the change: 0 diffs on 64 screenshots (baseline).\n- Visual regression suite after the change: 0 diffs on 64 screenshots.\n\nThe suite only covers those 64 screenshots, so buttons on pages or states it doesn't cover (hover, focus, disabled, etc.) are not verified by it.\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "sections": false,
+      "no_preamble": false,
+      "summary_visual": false,
+      "before_after": false,
+      "door": false,
+      "blast_radius": false,
+      "carries_the_evidence": true
+     },
+     "outputs": {
+      "PR_BODY.md": "## Add CSV export for reports behind a feature flag\n\nAdds `GET /reports/export.csv`, handled by `export_reports_csv`. It is only served when the `reports_csv_export` feature flag is on. The flag is off by default, so merging this changes nothing until the flag is enabled.\n\n```diff\n router\n   /reports            -> list_reports\n+  /reports/export.csv -> export_reports_csv   (flag: reports_csv_export)\n```\n\n### Testing\n- New `test_export_csv` passes.\n- New `test_export_hidden_when_flag_off` passes.\n- Neither test existed before this change.\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:18:18+00:00",
+   "usage": {
+    "total_tokens": 213076,
+    "input_tokens": 14,
+    "output_tokens": 2840,
+    "cache_write_tokens": 10156,
+    "cache_read_tokens": 200066,
+    "cost_usd": 0.0890586,
+    "turns": 14,
+    "duration_ms": 22662,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32785,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4733,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0217806,
+    "turns": 1,
+    "duration_ms": 2269,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 2,
+    "Read": 6,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "sections": true,
+      "no_preamble": true,
+      "summary_visual": true,
+      "before_after": true,
+      "door": true,
+      "blast_radius": true,
+      "carries_the_evidence": true
+     },
+     "outputs": {
+      "PR_BODY.md": "## Summary\n\nMigration `0042_drop_legacy_email.py`; the code that read the column is removed.\n\n```text\nupgrade()\n  UPDATE users SET email = legacy_email\n    WHERE email IS NULL AND legacy_email IS NOT NULL\n  drop column users.legacy_email\n\ndowngrade()\n  raise NotImplementedError   # values are not kept\n```\n\n## Evidence\n\n- **Before:** `test_login_uses_email` fails for 212 fixture users whose only address was in `legacy_email`.\n  **After:** 418 passed.\n\n## Merge Danger\n\n**Door:** one-way\n\nDropping the column is destructive. `downgrade()` raises `NotImplementedError` and cannot restore `legacy_email` values. Rolling back needs a database backup restore.\n\n**Blast Radius:** Data\n\nAny user whose only address is in `legacy_email` keeps it only through the copy into `email`. Users with both set keep `email` and lose `legacy_email`. Anything outside this repo still reading `legacy_email` (reports, scripts) will break. Take a backup before running the migration.\n"
+     }
+    },
+    "case-2": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "sections": true,
+      "no_preamble": true,
+      "summary_visual": true,
+      "before_after": true,
+      "door": true,
+      "blast_radius": true,
+      "carries_the_evidence": true
+     },
+     "outputs": {
+      "PR_BODY.md": "## Summary\n\nThree button styles collapse into one `<Button variant>` component. No visual change intended.\n\n```diff\n-<a class=\"btn-cta\" href=\"/signup\">Sign up</a>\n+<Button variant=\"primary\" href=\"/signup\">Sign up</Button>\n```\n\nReplaced classes: `.btn-primary`, `.btn-cta`, `.button-main`.\n\n## Evidence\n\n- **Before:** visual regression suite, 0 diffs on 64 screenshots (baseline).\n  **After:** visual regression suite, 0 diffs on 64 screenshots.\n\n## Merge Danger\n\n**Door:** two-way\n\nA revert restores the old classes.\n\n**Blast Radius:** Styling\n\nButtons not covered by the 64 screenshots may shift slightly. Any code outside this repo using the old class names loses its styles.\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "sections": true,
+      "no_preamble": true,
+      "summary_visual": true,
+      "before_after": true,
+      "door": true,
+      "blast_radius": true,
+      "carries_the_evidence": true
+     },
+     "outputs": {
+      "PR_BODY.md": "## Summary\n\nNew CSV export route, served only when the `reports_csv_export` feature flag is on (off by default).\n\n```diff\n router\n   /reports            -> list_reports\n+  /reports/export.csv -> export_reports_csv   (flag: reports_csv_export)\n```\n\n## Evidence\n\n- **Before:** `test_export_csv` did not exist.\n  **After:** `test_export_csv` and `test_export_hidden_when_flag_off` pass.\n\n```text\ntest_export_csv\n  flag on  -> GET /reports/export.csv returns CSV\n\ntest_export_hidden_when_flag_off\n  flag off -> GET /reports/export.csv is not served\n```\n\n## Merge Danger\n\n**Door:** two-way\n\nTurn the flag off or revert. The route is added only, with no data changes.\n\n**Blast Radius:** None\n\nThe flag is off by default, so nothing changes at merge. Enabling it exposes report data as CSV.\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}
