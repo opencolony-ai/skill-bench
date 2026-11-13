@@ -1,0 +1,20 @@
+{
+ "colonies": [
+  {"id": "coding-workflow",
+   "name": {"en": "Coding workflow", "zh": "寫程式的流程"},
+   "about": {"en": "Planning, reviewing, committing and describing code changes.", "zh": "規劃、審查、提交和說明程式變更。"},
+   "skills": ["writing-plans", "grilling", "domain-modeling", "receiving-code-review", "caveman-review", "caveman-commit", "pr"]},
+  {"id": "frontend-brand",
+   "name": {"en": "Front end and brand", "zh": "前端與品牌"},
+   "about": {"en": "Web pages that look intentional and on-brand.", "zh": "有設計意圖、符合品牌的網頁。"},
+   "skills": ["frontend-design", "brand-guidelines"]},
+  {"id": "workplace-writing",
+   "name": {"en": "Workplace writing", "zh": "職場溝通"},
+   "about": {"en": "Updates, reports and summaries people read at work.", "zh": "工作上大家要讀的更新、報告和摘要。"},
+   "skills": ["internal-comms", "cite-numbers"]},
+  {"id": "seed",
+   "name": {"en": "Seed skills", "zh": "種子技能"},
+   "about": {"en": "Small skills written for skill-bench's first pilot, including a deliberately vague control.", "zh": "skill-bench 第一次試驗自己寫的小技能，包括一個故意寫得很模糊的對照組。"},
+   "skills": ["conventional-commit", "commit-tips", "keep-a-changelog", "csv-cleanup"]}
+ ]
+}

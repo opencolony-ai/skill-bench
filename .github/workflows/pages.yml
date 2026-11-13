@@ -2,7 +2,7 @@ name: report
 on:
   push:
     branches: [main]
-    paths: ["results/**", "skills/**", "bench.py", "checks.py", "report.py"]
+    paths: ["results/**", "skills/**", "bench.py", "checks.py", "report.py", "web/**", "colonies.json"]
   workflow_dispatch:
 permissions:
   contents: read

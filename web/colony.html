@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenColony · Skill colonies</title>
+<meta name="description" content="Which agent skills actually help, verified by independent people on their own Claude Code.">
+<style>
+:root {
+  --bg: #f6f4ef; --card: #fcfcfb; --ink: #1d1c1a; --ink-2: #52514e; --ink-3: #7a7873; --line: #dedbd2;
+  --soil: #e9dfcf; --soil-2: #dccdb5; --tunnel: #c9b597; --sky: #f6f4ef; --chamber: #f7f1e6;
+  --good: #0ca30c; --warn: #b07a06; --warn-fill: #fab219; --none: #8a8984; --bad: #d03b3b;
+  --ant: #2b2420; --focus: #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --bg: #141412; --card: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #9a988f; --line: #33322e;
+    --soil: #2a241d; --soil-2: #352d24; --tunnel: #4a3f31; --sky: #141412; --chamber: #211c16;
+    --warn: #fab219; --none: #a3a19a; --ant: #e9dfcf; --focus: #6aa8f0;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141412; --card: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #9a988f; --line: #33322e;
+  --soil: #2a241d; --soil-2: #352d24; --tunnel: #4a3f31; --sky: #141412; --chamber: #211c16;
+  --warn: #fab219; --none: #a3a19a; --ant: #e9dfcf; --focus: #6aa8f0;
+}
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif; }
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 72px; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+header.top { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; }
+h1 { font-size: 30px; line-height: 1.15; margin: 0; }
+.lede { color: var(--ink-2); margin: 8px 0 0; max-width: 62ch; }
+.tools { display: flex; gap: 8px; }
+.tools button { font: inherit; font-size: 14px; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 24px 0; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.tile .v { font-size: 30px; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile .v small { font-size: 16px; color: var(--ink-3); font-weight: 500; }
+.tile .k { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--ink-2); margin: 0 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; display: inline-block; border: 1px solid var(--line); }
+section.nest { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; overflow: hidden; }
+.nest-head { padding: 14px 16px 6px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.nest-head h2 { font-size: 20px; margin: 0; }
+.nest-head p { margin: 2px 0 0; color: var(--ink-2); font-size: 14px; }
+.nest-head .count { color: var(--ink-2); font-size: 14px; white-space: nowrap; }
+svg.ground { display: block; width: 100%; height: auto; }
+svg .label { font-size: 13px; fill: var(--ink); font-weight: 600; }
+svg .sub { font-size: 12px; fill: var(--ink-2); }
+svg.narrow .label { font-size: 11.5px; } svg.narrow .sub { font-size: 11px; }
+svg .chamber { cursor: pointer; }
+svg .chamber:focus { outline: none; }
+svg .chamber:focus-visible .rim, svg .chamber:hover .rim { stroke: var(--focus); stroke-width: 3; }
+@media (prefers-reduced-motion: no-preference) {
+  .ant-idle { animation: wiggle 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes wiggle { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+}
+details.table { padding: 0 16px 12px; }
+details.table summary { cursor: pointer; color: var(--ink-2); font-size: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 500; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.wrap { overflow-x: auto; }
+.panel { position: fixed; inset: auto 16px 16px auto; width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
+  background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 16px; box-shadow: 0 8px 28px rgba(0,0,0,.18); z-index: 10; }
+.panel[hidden] { display: none; }
+.panel h3 { margin: 0 0 2px; font-size: 20px; }
+.panel .verdict { font-weight: 650; margin: 8px 0; }
+.panel dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0; font-size: 14px; }
+.panel dt { color: var(--ink-2); }
+.panel dd { margin: 0; font-variant-numeric: tabular-nums; }
+.panel .close { float: right; font: inherit; background: none; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); cursor: pointer; }
+.panel pre, .join pre { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-size: 13px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 13px; padding: 6px 8px; border-radius: 6px; max-width: 280px; z-index: 11; }
+.tip[hidden] { display: none; }
+.cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-top: 24px; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+.box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.box h2 { font-size: 20px; margin: 0 0 8px; }
+.box ol, .box ul { padding-left: 20px; margin: 6px 0; }
+.muted { color: var(--ink-2); font-size: 14px; }
+.icon { display: inline-block; width: 1.2em; text-align: center; font-weight: 700; }
+footer { margin-top: 32px; color: var(--ink-3); font-size: 13px; }
+.err { background: var(--card); border: 1px solid var(--bad); border-radius: 8px; padding: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1 id="t-title"></h1>
+      <p class="lede" id="t-lede"></p>
+    </div>
+    <div class="tools">
+      <button id="lang" type="button"></button>
+      <button id="theme" type="button" aria-label="theme"></button>
+    </div>
+  </header>
+
+  <div class="tiles" id="tiles" aria-live="polite"></div>
+  <div class="legend" id="legend"></div>
+  <div id="nests"></div>
+
+  <div class="cols">
+    <section class="box" aria-labelledby="t-workers">
+      <h2 id="t-workers"></h2>
+      <div class="wrap"><table id="workers"></table></div>
+      <h3 id="t-rule" style="font-size:16px;margin:16px 0 4px"></h3>
+      <ul id="rule" class="muted"></ul>
+    </section>
+    <section class="box join" aria-labelledby="t-join">
+      <h2 id="t-join"></h2>
+      <p class="muted" id="t-join-lede"></p>
+      <ol id="join"></ol>
+      <p class="muted" id="t-soon"></p>
+    </section>
+  </div>
+  <footer id="foot"></footer>
+</main>
+
+<aside class="panel" id="panel" hidden aria-live="polite"></aside>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+"use strict";
+const T = {
+  zh: {
+    title: "技能蟻窩", lede: "大家常裝的 agent 技能，真的讓 Claude 做得更好嗎？每個技能由互不相識的人用自己的 Claude Code 各跑一次「沒裝」和「裝了」，程式評分，三人結果一致才算數。",
+    lang: "English", themeL: "淺色", themeD: "深色",
+    tiles: { with_results: "有結果的技能", consensus: "已有共識", workers: "參與的工蟻", verifications: "完成的驗證", spent_usd: "大家貢獻的額度" },
+    of: "／", legendFill: "蟻室填滿 = 驗證人數（滿 3 人有共識）",
+    verdict: { better: "結果變好", format: "只改了格式", none: "沒有效果", worse: "結果變差", unrun: "還沒人驗" },
+    skills: "個技能", verifiedBy: "人驗證", tableView: "以表格查看",
+    th: { skill: "技能", verdict: "結論", results: "結果（沒裝→裝了）", cost: "費用", who: "驗證" },
+    workers: "工蟻榜", wth: { user: "工蟻", points: "點數", n: "驗證", agreed: "一致", pending: "待共識", spent: "貢獻額度" },
+    rule: "點數怎麼算", noWorkers: "還沒有人驗證。",
+    join: "加入挖礦", joinLede: "用你自己的 Claude Code 驗證一個技能，約 1–2 分鐘、US$0.1–0.4。",
+    steps: ["Fork 並 clone github.com/opencolony-ai/skill-bench", "python bench.py next --user <你的 GitHub 帳號>", "python bench.py run <它挑的技能>", "python bench.py submit <資料夾> --user <你的 GitHub 帳號>，再開 PR"],
+    soon: "製作中：Claude Code 外掛，一句「幫 OpenColony 挖一個」就能完成以上全部，以及用 GitHub Issues 認領（48 小時）。",
+    panel: { results: "結果", rules: "照技能做", cost: "費用", time: "時間", used: "Claude 打開技能", verifiers: "驗證者", author: "作者", source: "來源", report: "看並排對照", verify: "驗證這個技能", close: "關閉", none: "還沒人驗證這個技能。", noRules: "沒有規則檢查", runs: "次" },
+    foot: "資料：{t} 產生。所有數字都由 skill-bench repo 裡的結果檔算出，任何人都能重算。",
+    json: "原始資料 colony.json", repo: "GitHub repo", reportLink: "完整報告",
+    err: "讀不到資料：",
+  },
+  en: {
+    title: "Skill colonies", lede: "Do the agent skills people install actually make Claude better? Each skill is run without and with it by people who don't know each other, on their own Claude Code, graded by a program; it counts when three agree.",
+    lang: "中文", themeL: "Light", themeD: "Dark",
+    tiles: { with_results: "skills with results", consensus: "with consensus", workers: "workers", verifications: "verifications", spent_usd: "compute contributed" },
+    of: "/", legendFill: "chamber fill = verifiers (3 for consensus)",
+    verdict: { better: "Better results", format: "Format only", none: "No effect", worse: "Worse results", unrun: "Not run yet" },
+    skills: "skills", verifiedBy: "verified", tableView: "Show as a table",
+    th: { skill: "Skill", verdict: "Verdict", results: "Results (without→with)", cost: "Cost", who: "Verified" },
+    workers: "Workers", wth: { user: "Worker", points: "Points", n: "Runs", agreed: "Agreed", pending: "Pending", spent: "Spent" },
+    rule: "How points work", noWorkers: "Nobody has verified a skill yet.",
+    join: "Join the mining", joinLede: "Verify one skill on your own Claude Code: about 1–2 minutes, US$0.1–0.4.",
+    steps: ["Fork and clone github.com/opencolony-ai/skill-bench", "python bench.py next --user <your GitHub name>", "python bench.py run <the skill it picked>", "python bench.py submit <folder> --user <your GitHub name>, then open a pull request"],
+    soon: "Coming: a Claude Code plugin that does all of the above from one sentence (\"mine one for OpenColony\"), and claiming through GitHub Issues (48 hours).",
+    panel: { results: "Results", rules: "Follows the skill", cost: "Cost", time: "Time", used: "Claude opened the skill", verifiers: "Verifiers", author: "Author", source: "source", report: "See side by side", verify: "Verify this skill", close: "Close", none: "Nobody has verified this skill yet.", noRules: "no rule checks", runs: "runs" },
+    foot: "Data generated {t}. Every number is computed from the result files in the skill-bench repository; anyone can recompute it.",
+    json: "Raw data colony.json", repo: "GitHub repository", reportLink: "Full report",
+    err: "Could not load the data: ",
+  },
+};
+const VERDICT = {
+  better: { icon: "✓", color: "var(--good)" }, format: { icon: "≈", color: "var(--warn-fill)" },
+  none: { icon: "–", color: "var(--none)" }, worse: { icon: "✗", color: "var(--bad)" }, unrun: { icon: "○", color: "transparent" },
+};
+const params = new URLSearchParams(location.search);
+const DATA_URL = params.get("data") || "colony.json";
+const BASE = new URL(DATA_URL, location.href);          // the report and repo links live next to the data
+let LANG = params.get("lang") || ((navigator.language || "").toLowerCase().startsWith("zh") ? "zh" : "en");
+try { LANG = params.get("lang") || localStorage.getItem("colony-lang") || LANG; } catch (e) {}
+if (!T[LANG]) LANG = "en";
+let D = null;
+const $ = (s) => document.querySelector(s);
+const t = () => T[LANG];
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "text") e.textContent = v; else if (v !== null && v !== undefined) e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function sv(tag, attrs, ...kids) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "text") e.textContent = v; else if (v !== null && v !== undefined) e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+const money = (x) => x == null ? "–" : "$" + x.toFixed(2);
+const pair = (a, f) => !a || a[0] == null ? "–" : `${f(a[0])} → ${f(a[1])}`;
+const vkey = (s) => s.verdict || "unrun";
+
+function setTheme(mode) {
+  if (mode) document.documentElement.setAttribute("data-theme", mode); else document.documentElement.removeAttribute("data-theme");
+}
+function isDark() {
+  const m = document.documentElement.getAttribute("data-theme");
+  return m ? m === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function renderStatic() {
+  document.documentElement.lang = LANG === "zh" ? "zh-Hant" : "en";
+  $("#t-title").textContent = t().title;
+  $("#t-lede").textContent = t().lede;
+  $("#lang").textContent = t().lang;
+  $("#theme").textContent = isDark() ? t().themeL : t().themeD;
+  $("#t-workers").textContent = t().workers;
+  $("#t-rule").textContent = t().rule;
+  $("#t-join").textContent = t().join;
+  $("#t-join-lede").textContent = t().joinLede;
+  $("#t-soon").textContent = t().soon;
+  const join = $("#join"); join.replaceChildren(...t().steps.map((s) => el("li", {}, el("code", { text: s }))));
+  const lg = $("#legend");
+  lg.replaceChildren(el("span", { text: t().legendFill }),
+    ...Object.entries(VERDICT).map(([k, v]) => el("span", {},
+      el("i", { class: "sw", style: `background:${v.color}` }), el("span", { class: "icon", "aria-hidden": "true", text: v.icon }),
+      el("span", { text: t().verdict[k] }))));
+}
+
+function renderTiles() {
+  const x = D.totals, k = t().tiles;
+  const tiles = [
+    ["with_results", el("span", {}, String(x.with_results), el("small", { text: ` ${t().of} ${x.skills}` }))],
+    ["consensus", String(x.consensus)], ["workers", String(x.workers)], ["verifications", String(x.verifications)],
+    ["spent_usd", money(x.spent_usd)],
+  ];
+  $("#tiles").replaceChildren(...tiles.map(([key, v]) => el("div", { class: "tile" },
+    el("div", { class: "v" }, typeof v === "string" ? document.createTextNode(v) : v), el("div", { class: "k", text: k[key] }))));
+}
+
+// one nest: a mound with its entrance on the left, a shaft down the side, a gallery above every row of
+// chambers, and a short drop into each chamber; a chamber fills up as people verify it
+function nestSvg(colony, width) {
+  const left = 34, cols = Math.max(1, Math.min(4, Math.floor((width - left - 8) / 150)));
+  const cw = (width - left - 8) / cols, rowH = 156, top = 50;
+  const rows = Math.ceil(colony.skills.length / cols);
+  const H = top + rows * rowH + 4, sx = 18;
+  const svg = sv("svg", { class: "ground", viewBox: `0 0 ${width} ${H}`, role: "group", "aria-label": colony.name[LANG] });
+  svg.append(sv("rect", { x: 0, y: top - 10, width, height: H - top + 10, fill: "var(--soil)" }));
+  svg.append(sv("path", { d: `M${sx - 18},${top - 10} Q${sx + 14},${top - 44} ${sx + 58},${top - 10} Z`, fill: "var(--soil-2)" }));
+  svg.append(sv("ellipse", { cx: sx + 8, cy: top - 18, rx: 8, ry: 4.5, fill: "var(--tunnel)" }));
+  const tun = { fill: "none", stroke: "var(--tunnel)", "stroke-width": 8, "stroke-linecap": "round", "stroke-linejoin": "round" };
+  const pos = colony.skills.map((s, i) => {
+    const r = Math.floor(i / cols), c = i % cols;
+    return { s, r, x: left + c * cw + cw / 2, y: top + r * rowH + 62, gy: top + r * rowH + 14 };
+  });
+  const lastGallery = pos.length ? pos[pos.length - 1].gy : top;
+  svg.append(sv("path", { ...tun, d: `M${sx + 8},${top - 16} C${sx + 8},${top - 4} ${sx},${top} ${sx},${top + 8} L${sx},${lastGallery}` }));
+  for (let r = 0; r < rows; r++) {
+    const inRow = pos.filter((p) => p.r === r);
+    const gy = inRow[0].gy;
+    svg.append(sv("path", { ...tun, d: `M${sx},${gy} L${inRow[inRow.length - 1].x},${gy}` }));
+    for (const p of inRow) svg.append(sv("path", { ...tun, d: `M${p.x},${gy} L${p.x},${p.y - 26}` }));
+  }
+  const rx = Math.max(52, Math.min(84, cw / 2 - 10));
+  for (const p of pos) svg.append(chamber(p.s, p.x, p.y, rx));
+  if (cw < 175) svg.classList.add("narrow");
+  return svg;
+}
+
+function chamber(s, x, y, rx) {
+  const ry = 30, key = vkey(s), v = VERDICT[key], need = s.need || 3;
+  const g = sv("g", { class: "chamber", tabindex: 0, role: "button",
+    "aria-label": `${s.name}: ${t().verdict[key]}, ${s.verifiers}/${need} ${t().verifiedBy}` });
+  const id = "c-" + s.name.replace(/[^a-z0-9-]/gi, "");
+  const clip = sv("clipPath", { id }, sv("ellipse", { cx: x, cy: y, rx, ry }));
+  g.append(sv("defs", {}, clip));
+  g.append(sv("ellipse", { cx: x, cy: y, rx, ry, fill: "var(--chamber)" }));
+  const filled = Math.min(s.verifiers, need) / need;
+  if (filled > 0) {
+    const h = 2 * ry * filled;
+    g.append(sv("rect", { x: x - rx, y: y + ry - h, width: 2 * rx, height: h, fill: v.color, opacity: 0.85, "clip-path": `url(#${id})` }));
+  }
+  for (let i = 1; i < need; i++) {                       // thirds, so the count reads without a number
+    const yy = y + ry - (2 * ry * i) / need;
+    g.append(sv("line", { x1: x - rx, x2: x + rx, y1: yy, y2: yy, stroke: "var(--card)", "stroke-width": 2, "clip-path": `url(#${id})` }));
+  }
+  for (let i = 0; i < Math.min(s.verifiers, 6); i++) g.append(ant(x - 22 + i * 14, y + ry - 8, i));
+  g.append(sv("ellipse", { class: "rim", cx: x, cy: y, rx, ry, fill: "none", stroke: "var(--tunnel)", "stroke-width": 2 }));
+  g.append(sv("text", { class: "label", x, y: y + ry + 20, "text-anchor": "middle", text: s.name }));
+  g.append(sv("text", { class: "sub", x, y: y + ry + 37, "text-anchor": "middle",
+    text: `${v.icon} ${t().verdict[key]} · ${s.verifiers}/${need}` }));
+  const open = () => showPanel(s);
+  g.addEventListener("click", open);
+  g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  g.addEventListener("mousemove", (e) => showTip(e, s));
+  g.addEventListener("mouseleave", hideTip);
+  return g;
+}
+
+function ant(x, y, i) {
+  const g = sv("g", { class: "ant-idle", style: `animation-delay:${i * 0.4}s`, "aria-hidden": "true" });
+  for (const dx of [-4, 0, 4]) g.append(sv("ellipse", { cx: x + dx, cy: y, rx: dx === 0 ? 2.4 : 3, ry: 2.2, fill: "var(--ant)" }));
+  for (const dx of [-3, 0, 3]) {
+    g.append(sv("line", { x1: x + dx, y1: y, x2: x + dx - 2, y2: y + 4, stroke: "var(--ant)", "stroke-width": 0.8 }));
+    g.append(sv("line", { x1: x + dx, y1: y, x2: x + dx + 2, y2: y - 4, stroke: "var(--ant)", "stroke-width": 0.8 }));
+  }
+  return g;
+}
+
+function nestTable(colony) {
+  const h = t().th;
+  const rows = colony.skills.map((s) => el("tr", {},
+    el("td", { text: s.name }),
+    el("td", { text: `${VERDICT[vkey(s)].icon} ${s.verdict_text ? s.verdict_text[LANG] : t().verdict.unrun}` }),
+    el("td", { class: "num", text: pair(s.result, (v) => `${v}/${s.cases}`) }),
+    el("td", { class: "num", text: pair(s.cost, money) }),
+    el("td", { class: "num", text: `${s.verifiers}/${s.need}` })));
+  return el("div", { class: "wrap" }, el("table", {},
+    el("thead", {}, el("tr", {}, el("th", { text: h.skill }), el("th", { text: h.verdict }), el("th", { class: "num", text: h.results }),
+      el("th", { class: "num", text: h.cost }), el("th", { class: "num", text: h.who }))),
+    el("tbody", {}, ...rows)));
+}
+
+function renderNests() {
+  const box = $("#nests");
+  const width = Math.max(300, Math.min(box.clientWidth || 1000, 1120));
+  box.replaceChildren(...D.colonies.map((c) => {
+    const done = c.skills.filter((s) => s.verifiers > 0).length;
+    return el("section", { class: "nest", "aria-label": c.name[LANG] },
+      el("div", { class: "nest-head" },
+        el("div", {}, el("h2", { text: c.name[LANG] }), c.about[LANG] ? el("p", { text: c.about[LANG] }) : null),
+        el("div", { class: "count", text: `${done}/${c.skills.length} ${t().skills}` })),
+      nestSvg(c, width),
+      el("details", { class: "table" }, el("summary", { text: t().tableView }), nestTable(c)));
+  }));
+}
+
+function renderWorkers() {
+  const w = t().wth, tb = $("#workers");
+  if (!D.workers.length) { tb.replaceChildren(el("caption", { text: t().noWorkers })); }
+  else {
+    tb.replaceChildren(
+      el("thead", {}, el("tr", {}, el("th", { text: "#" }), el("th", { text: w.user }), el("th", { class: "num", text: w.points }),
+        el("th", { class: "num", text: w.n }), el("th", { class: "num", text: w.agreed }), el("th", { class: "num", text: w.pending }),
+        el("th", { class: "num", text: w.spent }))),
+      el("tbody", {}, ...D.workers.map((x, i) => el("tr", {},
+        el("td", { class: "num", text: String(i + 1) }),
+        el("td", {}, el("a", { href: "https://github.com/" + encodeURIComponent(x.user), rel: "noopener", text: x.user })),
+        el("td", { class: "num", text: String(x.points) }), el("td", { class: "num", text: String(x.verifications) }),
+        el("td", { class: "num", text: String(x.agreed) }), el("td", { class: "num", text: String(x.pending) }),
+        el("td", { class: "num", text: money(x.spent_usd) })))));
+  }
+  $("#rule").replaceChildren(...(D.points_rule[LANG] || []).map((r) => el("li", { text: r })));
+}
+
+function showPanel(s) {
+  const p = t().panel, key = vkey(s), panel = $("#panel");
+  const rows = s.verdict ? [
+    [p.results, pair(s.result, (v) => `${v}/${s.cases}`)],
+    [p.rules, s.rule && s.rule[0] != null ? pair(s.rule, (v) => `${v}/${s.cases}`) : p.noRules],
+    [p.cost, pair(s.cost, money) + (s.cost_change != null ? ` (${s.cost_change > 0 ? "+" : ""}${s.cost_change}%)` : "")],
+    [p.time, pair(s.seconds, (v) => `${Math.round(v)} s`)],
+    [p.used, `${s.used}/${s.verifiers} ${p.runs}`],
+  ] : [];
+  rows.push([p.verifiers, `${s.verifiers}/${s.need}${s.users.length ? " · " + s.users.join(", ") : ""}`]);
+  rows.push([p.author, s.author]);
+  const close = el("button", { class: "close", type: "button", text: p.close });
+  close.addEventListener("click", () => { panel.hidden = true; });
+  panel.replaceChildren(close,
+    el("h3", { text: s.name }),
+    el("div", { class: "verdict", style: `color:${key === "better" ? "var(--good)" : key === "worse" ? "var(--bad)" : "inherit"}`,
+      text: `${VERDICT[key].icon} ${s.verdict_text ? s.verdict_text[LANG] : p.none}` }),
+    el("dl", {}, ...rows.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v })])),
+    el("p", {},
+      s.verdict ? el("a", { href: new URL((LANG === "zh" ? "zh-TW.html#" : "index.html#") + encodeURIComponent(s.name), BASE).href, text: p.report }) : null,
+      s.verdict ? document.createTextNode(" · ") : null,
+      s.source ? el("a", { href: s.source, rel: "noopener", text: p.source }) : null),
+    el("p", { class: "muted", text: p.verify }),
+    el("pre", { text: `python bench.py run ${s.name}` }));
+  panel.hidden = false;
+  close.focus();
+}
+
+function showTip(e, s) {
+  const tip = $("#tip");
+  tip.textContent = `${s.name} · ${s.verdict_text ? s.verdict_text[LANG] : t().verdict.unrun} · ${s.verifiers}/${s.need}`;
+  tip.hidden = false;
+  tip.style.left = Math.min(e.clientX + 12, innerWidth - 300) + "px";
+  tip.style.top = (e.clientY + 14) + "px";
+}
+function hideTip() { $("#tip").hidden = true; }
+
+function renderFoot() {
+  const f = $("#foot");
+  f.replaceChildren(el("span", { text: t().foot.replace("{t}", new Date(D.generated).toLocaleString(LANG === "zh" ? "zh-TW" : "en")) + " " }),
+    el("a", { href: new URL("colony.json", BASE).href, text: t().json }), document.createTextNode(" · "),
+    el("a", { href: new URL(LANG === "zh" ? "zh-TW.html" : "index.html", BASE).href, text: t().reportLink }), document.createTextNode(" · "),
+    el("a", { href: "https://github.com/opencolony-ai/skill-bench", rel: "noopener", text: t().repo }));
+}
+
+function renderAll() {
+  renderStatic();
+  if (!D) return;
+  renderTiles(); renderNests(); renderWorkers(); renderFoot();
+}
+
+$("#lang").addEventListener("click", () => {
+  LANG = LANG === "zh" ? "en" : "zh";
+  try { localStorage.setItem("colony-lang", LANG); } catch (e) {}
+  $("#panel").hidden = true;
+  renderAll();
+});
+$("#theme").addEventListener("click", () => {
+  const next = isDark() ? "light" : "dark";
+  setTheme(next);
+  try { localStorage.setItem("colony-theme", next); } catch (e) {}
+  renderStatic();
+});
+try { const m = localStorage.getItem("colony-theme"); if (m) setTheme(m); } catch (e) {}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#panel").hidden = true; });
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => D && renderNests(), 150); });
+
+renderStatic();
+fetch(DATA_URL, { cache: "no-store" }).then((r) => { if (!r.ok) throw new Error(r.status + " " + r.statusText); return r.json(); })
+  .then((d) => { D = d; renderAll(); })
+  .catch((e) => { $("#nests").replaceChildren(el("p", { class: "err", text: t().err + e.message })); });
+</script>
+</body>
+</html>

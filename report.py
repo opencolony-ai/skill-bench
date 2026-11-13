@@ -170,9 +170,111 @@ def page(lang: str) -> str:
             f'{cards}</main></body></html>\n')
 
 
+# ------------------------------------------------------------------ the colony dashboard's data
+
+POINTS = {"verification": 1, "pioneer": 1, "agreement": 2}
+POINTS_RULE = {
+    "en": ["+1 for every verification CI accepted (it cost you real money).",
+           "+1 for being one of the first three verifiers of a skill version.",
+           "+2 when three or more people have verified that version and your run agrees with the median within one case."],
+    "zh": ["每一次被 CI 接受的驗證 +1（你真的花了錢）。",
+           "是某技能某版本的前三位驗證者，開路 +1。",
+           "那個版本有三人以上驗證，而且你的結果和中位數差不到一題，一致 +2。"],
+}
+
+
+def colonies() -> list[dict]:
+    """colonies.json: each colony is a set of skills for one use; a skill not listed lands in "other"."""
+    f = bench.ROOT / "colonies.json"
+    cs = json.loads(f.read_text(encoding="utf-8"))["colonies"] if f.is_file() else []
+    listed = {s for c in cs for s in c["skills"]}
+    rest = [n for n in bench.skill_names() if n not in listed]
+    if rest:
+        cs.append({"id": "other", "name": {"en": "Other", "zh": "其他"}, "about": {"en": "", "zh": ""}, "skills": rest})
+    known = set(bench.skill_names())
+    return [{**c, "skills": [s for s in c["skills"] if s in known]} for c in cs]
+
+
+def points() -> dict:
+    """Points per person, computed only from results/ (anyone can recompute them). Older versions of a
+    skill still count for the work done; agreement is judged within each version."""
+    out: dict[str, dict] = {}
+    by_version: dict[tuple, list] = {}
+    for r in bench.load_results():
+        name, user = r.get("skill"), str(r.get("user", "")).lower()
+        if not user or name not in bench.skill_names() or user == bench.skill_meta(name)["author"].lower():
+            continue
+        if bench.passes(r, "none") is None or bench.passes(r, "skill") is None:
+            continue
+        by_version.setdefault((name, r.get("version")), []).append(r)
+    for (name, ver), rs in by_version.items():
+        latest = {}
+        for r in sorted(rs, key=lambda r: r.get("finished", "")):
+            latest[str(r["user"]).lower()] = r          # one result per person per version
+        order = sorted(latest.values(), key=lambda r: r.get("finished", ""))
+        a = [bench.passes(r, "none") for r in order]
+        b = [bench.passes(r, "skill") for r in order]
+        enough = len(order) >= bench.NEED
+        ma, mb = (bench.statistics.median(a), bench.statistics.median(b)) if order else (0, 0)
+        for i, r in enumerate(order):
+            u = str(r["user"]).lower()
+            w = out.setdefault(u, {"user": r["user"], "verifications": 0, "points": 0, "agreed": 0, "pending": 0,
+                                   "skills": [], "last": "", "spent_usd": 0.0})
+            w["verifications"] += 1
+            w["points"] += POINTS["verification"] + (POINTS["pioneer"] if i < bench.NEED else 0)
+            agrees = abs(a[i] - ma) <= bench.TOLERANCE and abs(b[i] - mb) <= bench.TOLERANCE
+            if enough and agrees:
+                w["points"] += POINTS["agreement"]
+                w["agreed"] += 1
+            elif not enough:
+                w["pending"] += 1
+            if name not in w["skills"]:
+                w["skills"].append(name)
+            w["last"] = max(w["last"], str(r.get("finished", "")))
+            w["spent_usd"] += sum((r["arms"][arm].get("usage") or {}).get("cost_usd") or 0 for arm in bench.ARMS)
+    return out
+
+
+def colony_data() -> dict:
+    """Everything the colony dashboard draws, in one file. It has no state of its own."""
+    import datetime as dt
+    workers = sorted(points().values(), key=lambda w: (-w["points"], w["user"].lower()))
+    cs, skills_total, with_results, consensus, runs = [], 0, 0, 0, 0
+    for c in colonies():
+        items = []
+        for name in c["skills"]:
+            s, meta = bench.standing(name), bench.skill_meta(name)
+            skills_total += 1
+            item = {"name": name, "author": meta["author"], "source": meta.get("source"), "cases": s["cases"],
+                    "version": s["version"], "verifiers": s["verifiers"], "need": bench.NEED, "status": s["status"],
+                    "users": s["users"], "claims": [], "report": f"index.html#{name}"}
+            if "verdict" in s:
+                with_results += 1
+                consensus += s["status"] in ("consistent", "no signal")
+                item.update(verdict=s["verdict"], verdict_text={l: bench.verdict_text(s, l) for l in ("en", "zh")},
+                            used=s["used"], cost_change=s.get("cost_change"),
+                            **{k: [s.get(f"{k}_none"), s.get(f"{k}_skill")] for k in ("result", "rule", "cost", "seconds")})
+            items.append(item)
+        cs.append({**c, "skills": items})
+    for r in bench.load_results():
+        runs += 1
+    spent = sum(w["spent_usd"] for w in workers)
+    return {"schema": 1, "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+            "need": bench.NEED, "points_rule": POINTS_RULE,
+            "totals": {"skills": skills_total, "with_results": with_results, "consensus": consensus,
+                       "workers": len(workers), "verifications": runs, "spent_usd": round(spent, 2), "active_claims": 0},
+            "colonies": cs, "workers": workers}
+
+
 def build(out: Path) -> list[Path]:
     out.mkdir(parents=True, exist_ok=True)
     files = []
+    (out / "colony.json").write_text(json.dumps(colony_data(), ensure_ascii=False, indent=1), encoding="utf-8")
+    files.append(out / "colony.json")
+    dash = bench.ROOT / "web" / "colony.html"
+    if dash.is_file():
+        (out / "colony.html").write_text(dash.read_text(encoding="utf-8"), encoding="utf-8")
+        files.append(out / "colony.html")
     for lang, fn in (("en", "index.html"), ("zh", "zh-TW.html")):
         (out / fn).write_text(page(lang), encoding="utf-8")
         files.append(out / fn)

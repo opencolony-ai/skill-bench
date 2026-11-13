@@ -249,6 +249,46 @@ class Bench(unittest.TestCase):
         self.assertEqual(bench._refused(d), "Write(/elsewhere/x.html)")
         self.assertEqual(bench._refused({"tool_name": "Bash", "tool_input": {"command": "ls"}}), "Bash")
 
+    # ------------------------------------------------------------ the colony dashboard
+    def test_every_skill_lives_in_exactly_one_colony(self):
+        import report
+        names = [s for c in report.colonies() for s in c["skills"]]
+        self.assertEqual(sorted(names), sorted(bench.skill_names()))
+
+    def test_points_reward_the_work_the_first_three_and_agreement(self):
+        import report
+        for u, (a, b) in {"ann": (0, 3), "bob": (0, 3), "cy": (1, 3), "dee": (0, 3), "eve": (3, 0)}.items():
+            r = fake_result(u, a, b)
+            r["finished"] = {"ann": "2026-11-13T01", "bob": "2026-11-13T02", "cy": "2026-11-13T03",
+                             "dee": "2026-11-13T04", "eve": "2026-11-13T05"}[u]
+            self.put(r)
+        self.put(fake_result("opencolony-ai", 0, 3))          # the skill's author earns nothing on it
+        pts = report.points()
+        self.assertEqual(pts["ann"]["points"], 1 + 1 + 2)      # work, first three, agrees
+        self.assertEqual(pts["cy"]["points"], 1 + 1 + 2)       # within one case of the median
+        self.assertEqual(pts["dee"]["points"], 1 + 2)          # fourth: no pioneer point
+        self.assertEqual(pts["eve"]["points"], 1)              # disagrees: still paid for the work, never less
+        self.assertNotIn("opencolony-ai", pts)
+
+    def test_points_wait_for_three_people_before_agreement_counts(self):
+        import report
+        self.put(fake_result("ann", 0, 3))
+        self.assertEqual(report.points()["ann"]["points"], 2)
+        self.assertEqual(report.points()["ann"]["pending"], 1)
+
+    def test_the_colony_data_adds_up_and_the_page_draws_text_safely(self):
+        import report
+        self.put(fake_result("ann", 0, 3))
+        d = json.loads(json.dumps(report.colony_data()))
+        self.assertEqual(d["totals"]["skills"], len(bench.skill_names()))
+        self.assertEqual(d["totals"]["with_results"], 1)
+        self.assertEqual(d["totals"]["workers"], 1)
+        item = next(s for c in d["colonies"] for s in c["skills"] if s["name"] == SKILL)
+        self.assertEqual((item["verdict"], item["verifiers"]), ("format", 1))
+        page = (bench.ROOT / "web" / "colony.html").read_text(encoding="utf-8")
+        self.assertNotIn("innerHTML", page)
+        self.assertNotIn("insertAdjacentHTML", page)
+
     def test_imported_skills_name_their_source_and_licence(self):
         for name in bench.skill_names():
             meta = bench.skill_meta(name)

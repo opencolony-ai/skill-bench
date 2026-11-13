@@ -2,7 +2,7 @@
 
 **一個技能，真的讓 Claude 把那件事做得更好嗎？** 大多數技能從來沒被量過。skill-bench 用同一種方法、由不同的人重複量：Claude Code 把技能附的小測試案例做兩次，一次沒有技能、一次有技能，再由程式評分它寫出的檔案。至少三位作者以外的人結果一致，才算數。
 
-看[報告](https://opencolony-ai.github.io/skill-bench/zh-TW.html)：每個技能一張卡，下面是沒裝和裝了技能時 Claude 寫的東西並排。
+看[蟻窩儀表板](https://opencolony-ai.github.io/skill-bench/colony.html?lang=zh)（每個技能、誰驗證過、點數）和[報告](https://opencolony-ai.github.io/skill-bench/zh-TW.html)：每個技能一張卡，下面是沒裝和裝了技能時 Claude 寫的東西並排。
 
 ## 怎麼看結果
 

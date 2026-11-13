@@ -5,8 +5,16 @@ skill-bench measures each one the same way, many times, by different people: Cla
 skill's small test cases twice, once without the skill and once with it, and a program grades the
 files it writes. A result counts when three people other than the skill's author get the same answer.
 
-See the [report](https://opencolony-ai.github.io/skill-bench/) (what Claude wrote, side by side) and the
-[leaderboard](LEADERBOARD.md).
+See the [colony dashboard](https://opencolony-ai.github.io/skill-bench/colony.html) (every skill, who verified
+it, points), the [report](https://opencolony-ai.github.io/skill-bench/) (what Claude wrote, side by side) and the
+[leaderboard](LEADERBOARD.md). All three are built from `results/`; the dashboard reads one file,
+[`colony.json`](https://opencolony-ai.github.io/skill-bench/colony.json), which any other site can read too
+(`colony.html?data=<url of colony.json>`).
+
+Skills are grouped into colonies, one per use, in `colonies.json`. Points are computed from `results/` only
+(`report.points`): +1 for every verification CI accepted, +1 for being among the first three verifiers of a
+skill version, +2 when at least three people have verified that version and your run agrees with the median
+within one case. Points cannot be transferred; they are a public record of the work.
 
 ## Reading a result
 
