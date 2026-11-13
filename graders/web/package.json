@@ -1,0 +1,8 @@
+{
+  "name": "skill-bench-web-grader",
+  "private": true,
+  "description": "Renders a page Claude wrote in headless Chromium and measures what breaks. Used by CI and the judging schedule, never by the run itself.",
+  "dependencies": {
+    "axe-core": "4.10.3"
+  }
+}

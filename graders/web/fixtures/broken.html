@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>broken</title>
+<link rel="stylesheet" href="https://fonts.example.com/inter.css">
+<style>
+  body { margin: 0; font-family: sans-serif; }
+  .wide { width: 900px; background: #eee; padding: 8px; }
+  .clip { width: 120px; height: 20px; overflow: hidden; white-space: nowrap; }
+  .a, .b { position: absolute; top: 200px; left: 20px; font-size: 18px; }
+  .pale { color: #cfcfcf; background: #fff; }
+  a.tiny { display: inline-block; width: 12px; height: 12px; font-size: 9px; }
+  button { outline: none; border: 0; background: #08f; color: #fff; }
+  button:focus { outline: none; }
+  .spin { animation: spin 2s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style></head>
+<body>
+  <div class="wide">This row is 900px wide and pushes the page sideways on a phone.</div>
+  <div class="clip">This sentence is far too long to fit in its little box.</div>
+  <p class="a">First headline here</p><p class="b">Second text drawn on top</p>
+  <p class="pale">Pale grey text that is hard to read on white.</p>
+  <nav><a class="tiny" href="#x">x</a></nav>
+  <button>Buy</button><button>Sell</button>
+  <span class="spin">*</span>
+  <img src="photo.jpg">
+  <script>undefinedFunction();</script>
+</body></html>
