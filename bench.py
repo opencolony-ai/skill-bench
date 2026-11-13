@@ -247,7 +247,14 @@ def _usage(js: dict) -> dict:
             "cost_usd": js.get("total_cost_usd"), "turns": js.get("num_turns"),
             "duration_ms": js.get("duration_ms"), "models": sorted((js.get("modelUsage") or {}).keys()),
             "permission_denials": len(js.get("permission_denials") or []),
-            "refused": [str(d.get("tool_name", "?")) for d in (js.get("permission_denials") or []) if isinstance(d, dict)]}
+            "refused": [_refused(d) for d in (js.get("permission_denials") or []) if isinstance(d, dict)]}
+
+
+def _refused(d: dict) -> str:
+    """What Claude Code refused: the tool and where it pointed (a path or pattern), never file contents."""
+    i = d.get("tool_input") or {}
+    where = next((str(i[k]) for k in ("file_path", "path", "pattern", "notebook_path") if i.get(k)), "")
+    return f"{d.get('tool_name', '?')}({where[:160]})" if where else str(d.get("tool_name", "?"))
 
 
 def _read_stream(text: str) -> tuple[dict, list[dict]]:

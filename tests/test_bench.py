@@ -244,6 +244,11 @@ class Bench(unittest.TestCase):
         self.assertEqual(out["usage"]["cost_usd"], 0.1)
         self.assertEqual(out["warmup_usage"]["cost_usd"], 0.5)
 
+    def test_a_refusal_records_where_it_pointed_not_what_it_wrote(self):
+        d = {"tool_name": "Write", "tool_input": {"file_path": "/elsewhere/x.html", "content": "secret"}}
+        self.assertEqual(bench._refused(d), "Write(/elsewhere/x.html)")
+        self.assertEqual(bench._refused({"tool_name": "Bash", "tool_input": {"command": "ls"}}), "Bash")
+
     def test_imported_skills_name_their_source_and_licence(self):
         for name in bench.skill_names():
             meta = bench.skill_meta(name)
