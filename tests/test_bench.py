@@ -220,6 +220,30 @@ class Bench(unittest.TestCase):
         self.assertIn("conventional-commit", text)
         self.assertIn("結果一樣", (out / "zh-TW.html").read_text(encoding="utf-8"))
 
+    def test_finding_a_bug_counts_however_the_line_is_written(self):
+        case = bench.case_dirs("caveman-review")[1]   # the bug is on line 2
+        for text in ("**greet.js:2** - missing await", "Line 2: missing await", "第 2 行少了 await", "L2: missing await"):
+            with tempfile.TemporaryDirectory() as tmp:
+                (Path(tmp) / "review.md").write_text(text, encoding="utf-8")
+                self.assertTrue(bench.checks.grade(bench.expect_of(case), tmp)["bugs_found"], text)
+
+    def test_both_arms_start_from_a_warm_cache_and_the_warm_up_is_not_counted(self):
+        import os, stat
+        log = self.tmp / "calls.log"
+        fake = self.tmp / "claude"
+        fake.write_text("#!/bin/sh\n"
+                        f"echo \"$2\" >> {log}\n"
+                        "case \"$2\" in Reply*) cost=0.5;; *) cost=0.1;; esac\n"
+                        "echo '{\"type\":\"result\",\"num_turns\":1,\"total_cost_usd\":'$cost',\"usage\":{\"input_tokens\":1}}'\n",
+                        encoding="utf-8")
+        fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
+        out = bench.run_arm("caveman-commit", "skill", self.tmp / "arm", "sonnet", str(fake), 60)
+        calls = log.read_text(encoding="utf-8").splitlines()
+        self.assertTrue(calls[0].startswith("Reply with the single word OK"))
+        self.assertTrue(calls[1].startswith("Do each task"))
+        self.assertEqual(out["usage"]["cost_usd"], 0.1)
+        self.assertEqual(out["warmup_usage"]["cost_usd"], 0.5)
+
     def test_imported_skills_name_their_source_and_licence(self):
         for name in bench.skill_names():
             meta = bench.skill_meta(name)

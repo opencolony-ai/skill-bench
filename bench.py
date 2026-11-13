@@ -246,7 +246,8 @@ def _usage(js: dict) -> dict:
             "cache_write_tokens": u.get("cache_creation_input_tokens"), "cache_read_tokens": u.get("cache_read_input_tokens"),
             "cost_usd": js.get("total_cost_usd"), "turns": js.get("num_turns"),
             "duration_ms": js.get("duration_ms"), "models": sorted((js.get("modelUsage") or {}).keys()),
-            "permission_denials": len(js.get("permission_denials") or [])}
+            "permission_denials": len(js.get("permission_denials") or []),
+            "refused": [str(d.get("tool_name", "?")) for d in (js.get("permission_denials") or []) if isinstance(d, dict)]}
 
 
 def _read_stream(text: str) -> tuple[dict, list[dict]]:
@@ -298,9 +299,20 @@ def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: 
     # cannot make Claude run commands on the verifier's computer. The verifier's own skills, plugins
     # and MCP servers stay out (user settings are not loaded), so both arms see only Claude Code's
     # built-in skills, plus this skill in the skill arm.
-    cmd = [claude, "-p", PROMPT, "--output-format", "stream-json", "--verbose", "--model", model,
-           "--permission-mode", "acceptEdits", "--max-turns", "60", "--setting-sources", "project,local",
-           "--strict-mcp-config", "--disallowedTools", "Bash", "WebFetch", "WebSearch"]
+    flags = ["--output-format", "stream-json", "--verbose", "--model", model,
+             "--permission-mode", "acceptEdits", "--setting-sources", "project,local",
+             "--strict-mcp-config", "--disallowedTools", "Bash", "WebFetch", "WebSearch"]
+    # Warm the prompt cache first, with the same setup and a request that touches nothing, so that
+    # neither arm pays for writing Claude Code's own prompt into the cache and the other gets it free.
+    # Its cost is recorded apart and not counted.
+    warm = {}
+    try:
+        w = subprocess.run([claude, "-p", "Reply with the single word OK. Do not use any tools.", "--max-turns", "1"] + flags,
+                           cwd=where, capture_output=True, text=True, timeout=300)
+        warm = _usage(_read_stream(w.stdout)[0])
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    cmd = [claude, "-p", PROMPT, "--max-turns", "60"] + flags
     started = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     try:
         p = subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=timeout)
@@ -309,12 +321,13 @@ def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: 
         err = None if ok else (js.get("result") or p.stderr or f"exit {p.returncode}")[-500:]
     except (OSError, subprocess.TimeoutExpired) as e:
         js, tools, ok, err = {}, [], False, str(e)[-500:]
-    out = {"started": started, "usage": _usage(js), "tools": _tool_counts(tools),
+    out = {"started": started, "usage": _usage(js), "warmup_usage": warm, "tools": _tool_counts(tools),
            "skill_used": _skill_used(tools, name), "cases": grade_arm(name, where)}
     wrote = any(c["outputs"] for c in out["cases"].values())
     if not wrote and (not ok or out["usage"]["permission_denials"]):
         # nothing came of it and the tool refused it something: the environment, not the skill
-        out["could_not_run"] = err or f"{out['usage']['permission_denials']} action(s) refused by Claude Code's permissions"
+        out["could_not_run"] = err or (f"{out['usage']['permission_denials']} action(s) refused by Claude Code's permissions: "
+                                       + ", ".join(out["usage"]["refused"]))
     elif err:
         out["error"] = err
     return out

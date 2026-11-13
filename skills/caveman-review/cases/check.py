@@ -18,7 +18,8 @@ def check(folder, e):
     others = [l for l, m in found if not m]
     # where the review points, in any wording ("L3", "line 3", "lines 8-9"): finding the bug is
     # checked apart from the format
-    named = [(int(a), int(b or a)) for a, b in re.findall(r"(?i)\b(?:L|lines?\s+)(\d+)(?:\s*[-–]\s*L?(\d+))?", t)]
+    named = [(int(a), int(b or a)) for a, b in re.findall(
+        r"(?i)(?:\bL|\blines?\s+|\.\w{1,4}:|#L|第\s*)(\d+)(?:\s*[-–]\s*L?(\d+))?", t)]
     return {
         "exists": True,
         "one_line_per_finding": bool(hits) and len(others) <= 1,   # one line of overall remarks at the top is allowed
