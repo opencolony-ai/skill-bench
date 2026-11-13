@@ -1,4 +1,9 @@
 {
  "check": "script",
- "door": "two-way"
+ "door": "two-way",
+ "mentions": [
+  [
+   "64"
+  ]
+ ]
 }

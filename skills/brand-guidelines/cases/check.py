@@ -53,3 +53,14 @@ def check(folder, e):
         "body_font": body[:1] == ["lora"] and "georgia" in body,
         "content": all(s.lower() in t.lower() for s in e["text"]),
     }
+
+
+# The task asks for Anthropic's brand colours and typography, so all of these are results.
+ABOUT = {
+    "brand_colours_only": {"kind": "result", "en": "every colour is one of Anthropic's brand colours", "zh": "每個顏色都是 Anthropic 品牌色",
+                           "flag": r"#[0-9a-fA-F]{3,8}\b"},
+    "uses_the_palette": {"kind": "result", "en": "uses at least three brand colours", "zh": "至少用了三個品牌色"},
+    "heading_font": {"kind": "result", "en": "headings in Poppins, Arial as fallback", "zh": "標題用 Poppins，備用 Arial"},
+    "body_font": {"kind": "result", "en": "body text in Lora, Georgia as fallback", "zh": "內文用 Lora，備用 Georgia"},
+    "content": {"kind": "result", "en": "has the content given in the task", "zh": "有題目給的內容"},
+}

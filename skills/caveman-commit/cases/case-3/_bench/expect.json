@@ -4,5 +4,12 @@
   "perf",
   "refactor"
  ],
- "breaking": false
+ "breaking": false,
+ "mentions": [
+  [
+   "regex",
+   "pattern",
+   "compile"
+  ]
+ ]
 }

@@ -7,6 +7,7 @@ each on their own Claude Code, counted when independent runs agree.
     python bench.py run <skill>                run it with and without the skill, grade both
     python bench.py submit <run-folder>        write the result into results/ for a pull request
     python bench.py board                      rebuild LEADERBOARD.md from results/
+    python bench.py site                       build the report (site/): what Claude wrote, side by side
 
     python bench.py check-cases                every case: its reference passes, its trivial answer fails
     python bench.py verify <result.json>...    what CI runs on a pull request (re-grades the outputs)
@@ -120,6 +121,48 @@ def passes(r: dict, arm: str) -> int | None:
     return sum(1 for c in (a.get("cases") or {}).values() if c.get("pass"))
 
 
+def _abouts(name: str) -> dict:
+    return {c.name: checks.about(expect_of(c)) for c in case_dirs(name)}
+
+
+def split(r: dict, arm: str, abouts: dict) -> dict:
+    """One arm of one result, told apart: cases whose result checks all pass, cases whose rule checks
+    all pass (None when the cases check no rule), and what the arm cost."""
+    a = (r.get("arms") or {}).get(arm) or {}
+    res = rule = 0
+    has_rule = False
+    for cn, c in (a.get("cases") or {}).items():
+        kinds = abouts.get(cn, {})
+        got = c.get("checks") or {}
+        res += all(v for k, v in got.items() if kinds.get(k, {}).get("kind", "result") == "result")
+        rules = [v for k, v in got.items() if kinds.get(k, {}).get("kind") == "rule"]
+        has_rule |= bool(rules)
+        rule += all(rules)
+    u = a.get("usage") or {}
+    return {"result": res, "rule": rule if has_rule else None, "cost": u.get("cost_usd"),
+            "seconds": (u.get("duration_ms") or 0) / 1000 or None, "output_tokens": u.get("output_tokens")}
+
+
+def _median(xs):
+    xs = [x for x in xs if isinstance(x, (int, float))]
+    return statistics.median(xs) if xs else None
+
+
+def verdict(s: dict) -> tuple[str, float | None]:
+    """The one-line reading of a standing, by fixed rules: results first, then format, then cost.
+    Returns (better | worse | format | none, cost change in percent)."""
+    pct = None
+    if s.get("cost_none") and s.get("cost_skill") is not None:
+        pct = round((s["cost_skill"] - s["cost_none"]) / s["cost_none"] * 100)
+    if s["result_skill"] > s["result_none"]:
+        return "better", pct
+    if s["result_skill"] < s["result_none"]:
+        return "worse", pct
+    if s.get("rule_skill") is not None and s["rule_skill"] > (s.get("rule_none") or 0):
+        return "format", pct
+    return "none", pct
+
+
 def standing(name: str) -> dict:
     """Where a skill stands for its current version: self-reported, consistent, disputed, no signal."""
     meta, ver, n = skill_meta(name), version(name), len(case_dirs(name))
@@ -143,6 +186,12 @@ def standing(name: str) -> dict:
     toks = [r.get("arms", {}).get("skill", {}).get("usage", {}).get("total_tokens") for r in runs]
     toks = [t for t in toks if isinstance(t, (int, float))]
     out["tokens_median"] = statistics.median(toks) if toks else None
+    ab = _abouts(name)
+    for arm in ARMS:
+        parts = [split(r, arm, ab) for r in runs]
+        for k in ("result", "rule", "cost", "seconds", "output_tokens"):
+            out[f"{k}_{arm}"] = _median([p[k] for p in parts])
+    out["verdict"], out["cost_change"] = verdict(out)
     used = [r.get("arms", {}).get("skill", {}).get("skill_used") for r in runs]
     out["used"] = sum(1 for u in used if u is True)  # runs in which Claude opened the skill at all
     agree = all(abs(x - ma) <= TOLERANCE for x in a) and all(abs(x - mb) <= TOLERANCE for x in b)
@@ -193,7 +242,9 @@ def _usage(js: dict) -> dict:
     u = js.get("usage") or {}
     tot = sum(int(u.get(k) or 0) for k in ("input_tokens", "output_tokens", "cache_creation_input_tokens",
                                              "cache_read_input_tokens"))
-    return {"total_tokens": tot, "cost_usd": js.get("total_cost_usd"), "turns": js.get("num_turns"),
+    return {"total_tokens": tot, "input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
+            "cache_write_tokens": u.get("cache_creation_input_tokens"), "cache_read_tokens": u.get("cache_read_input_tokens"),
+            "cost_usd": js.get("total_cost_usd"), "turns": js.get("num_turns"),
             "duration_ms": js.get("duration_ms"), "models": sorted((js.get("modelUsage") or {}).keys()),
             "permission_denials": len(js.get("permission_denials") or [])}
 
@@ -431,31 +482,56 @@ STATUS_WORDS = {"consistent": "✅ consistent", "disputed": "⚠️ disputed", "
                 "self-reported": "🕓 self-reported", "not yet run": "· not yet run"}
 
 
+VERDICT_WORDS = {
+    "en": {"better": "Better results", "worse": "Worse results", "format": "Same results, follows the skill's format",
+           "none": "No effect", "more": "costs {p}% more", "less": "costs {p}% less", "same": "about the same cost"},
+    "zh": {"better": "結果變好", "worse": "結果變差", "format": "結果一樣，只改了格式", "none": "沒有效果",
+           "more": "多花 {p}%", "less": "省下 {p}%", "same": "費用差不多"},
+}
+
+
+def verdict_text(s: dict, lang: str = "en") -> str:
+    w = VERDICT_WORDS[lang]
+    p = s.get("cost_change")
+    cost = "" if p is None else (w["same"] if abs(p) < 5 else (w["more"] if p > 0 else w["less"]).format(p=abs(p)))
+    return w[s["verdict"]] + ((", " if lang == "en" else "，") + cost if cost else "")
+
+
+def _arrow(s, k, fmt):
+    a, b = s.get(f"{k}_none"), s.get(f"{k}_skill")
+    return "-" if a is None or b is None else f"{fmt(a)} → {fmt(b)}"
+
+
 def cmd_board(a) -> None:
     rows = [standing(n) for n in skill_names()]
-    order = {"consistent": 0, "disputed": 1, "no signal": 2, "self-reported": 3, "not yet run": 4}
-    rows.sort(key=lambda s: (order[s["status"]], -(s.get("effect") or 0), s["skill"]))
+    order = {"better": 0, "worse": 1, "format": 2, "none": 3}
+    rows.sort(key=lambda s: ("verdict" not in s, order.get(s.get("verdict"), 9), s["skill"]))
     out = ["# Leaderboard", "",
-           "Generated by `python bench.py board` from `results/`. Each verifier runs the skill's cases twice on "
-           "their own Claude Code, without and with the skill. A result counts when at least "
-           f"{NEED} people other than the author agree within {TOLERANCE} case. "
+           "Generated by `python bench.py board` from `results/`; the [report](https://opencolony-ai.github.io/skill-bench/) "
+           "shows what Claude wrote, side by side. Each verifier runs the skill's cases twice on their own Claude Code, "
+           "without and with the skill.", "",
+           "- **Results**: cases where Claude did everything the task asked. Claude without the skill has a fair chance here.",
+           "- **Follows the skill**: cases where Claude kept every rule the skill states (each rule quotes the skill). "
+           "Without the skill Claude was never told these rules, so this shows the skill was read and obeyed, not that "
+           "the work got better.",
+           "- **Cost** and **time** are for the whole set of cases, median over verifiers, at API prices.",
+           f"- A result counts when at least {NEED} people other than the author agree within {TOLERANCE} case. "
            "**The model is reported by each verifier and not checked.**", "",
-           "| Skill | Status | Without skill | With skill | Effect | Claude used it | Verifiers | Tokens (median, with skill) |",
+           "| Skill | Verdict | Results | Follows the skill | Cost | Time | Claude used it | Verifiers |",
            "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     for s in rows:
         n = s["cases"]
-        cell = (lambda k: f"{s[k]:g}/{n}") if "effect" in s else (lambda k: "-")
-        eff = f"{s['effect']:+g}" if "effect" in s else "-"
-        tok = f"{s['tokens_median']:,.0f}" if s.get("tokens_median") else "-"
-        used = f"{s['used']}/{s['verifiers']} runs" if "effect" in s else "-"
-        out.append(f"| [{s['skill']}](skills/{s['skill']}/SKILL.md) | {STATUS_WORDS[s['status']]} | {cell('none_median')} | "
-                   f"{cell('skill_median')} | {eff} | {used} | {s['verifiers']}/{NEED} | {tok} |")
-    out += ["", "- ✅ consistent: enough independent verifiers, and they agree.",
-            "- ⚠️ disputed: verifiers disagree; more are being asked.",
-            "- ➖ no signal: Claude already passes these cases without the skill, so they cannot show what it adds.",
-            "- 🕓 self-reported: fewer than " + str(NEED) + " verifiers so far.",
-            "- Claude used it: in how many runs with the skill installed Claude opened it at all. A skill it never "
-            "opens cannot help, however good its text.", ""]
+        link = f"[{s['skill']}](skills/{s['skill']}/SKILL.md)"
+        if "verdict" not in s:
+            out.append(f"| {link} | not yet run | - | - | - | - | - | 0/{NEED} |")
+            continue
+        out.append(f"| {link} | {verdict_text(s)} | {_arrow(s, 'result', lambda x: f'{x:g}/{n}')} | "
+                   f"{_arrow(s, 'rule', lambda x: f'{x:g}/{n}')} | {_arrow(s, 'cost', lambda x: f'${x:.2f}')} | "
+                   f"{_arrow(s, 'seconds', lambda x: f'{x:.0f} s')} | {s['used']}/{s['verifiers']} runs | "
+                   f"{s['verifiers']}/{NEED} {STATUS_WORDS[s['status']]} |")
+    out += ["", "Status: ✅ consistent (enough verifiers, and they agree) · ⚠️ disputed (they disagree; more are asked) · "
+            "➖ no signal (Claude passes without the skill) · 🕓 self-reported (fewer than " + str(NEED) + " verifiers).",
+            "Claude used it: in how many runs with the skill installed Claude opened it at all.", ""]
     text = "\n".join(out)
     if a.check:
         if (ROOT / "LEADERBOARD.md").read_text(encoding="utf-8") != text:
@@ -463,6 +539,12 @@ def cmd_board(a) -> None:
         return
     (ROOT / "LEADERBOARD.md").write_text(text, encoding="utf-8")
     print("wrote LEADERBOARD.md")
+
+
+def cmd_site(a) -> None:
+    import report
+    for f in report.build(Path(a.out)):
+        print(f"wrote {f}")
 
 
 def main(argv=None) -> int:
@@ -478,6 +560,7 @@ def main(argv=None) -> int:
     p.set_defaults(fn=cmd_run)
     p = sub.add_parser("submit"); p.add_argument("run"); p.add_argument("--user"); p.set_defaults(fn=cmd_submit)
     p = sub.add_parser("board"); p.add_argument("--check", action="store_true"); p.set_defaults(fn=cmd_board)
+    p = sub.add_parser("site"); p.add_argument("--out", default="site"); p.set_defaults(fn=cmd_site)
     sub.add_parser("check-cases").set_defaults(fn=cmd_check_cases)
     p = sub.add_parser("verify"); p.add_argument("files", nargs="+"); p.add_argument("--author")
     p.set_defaults(fn=cmd_verify)

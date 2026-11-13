@@ -1,4 +1,12 @@
 {
  "check": "script",
- "door": "one-way"
+ "door": "one-way",
+ "mentions": [
+  [
+   "212"
+  ],
+  [
+   "418"
+  ]
+ ]
 }

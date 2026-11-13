@@ -1,4 +1,12 @@
 {
  "check": "script",
- "door": "two-way"
+ "door": "two-way",
+ "mentions": [
+  [
+   "test_export_csv"
+  ],
+  [
+   "flag"
+  ]
+ ]
 }

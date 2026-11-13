@@ -5,7 +5,35 @@ skill-bench measures each one the same way, many times, by different people: Cla
 skill's small test cases twice, once without the skill and once with it, and a program grades the
 files it writes. A result counts when three people other than the skill's author get the same answer.
 
-See the [leaderboard](LEADERBOARD.md).
+See the [report](https://opencolony-ai.github.io/skill-bench/) (what Claude wrote, side by side) and the
+[leaderboard](LEADERBOARD.md).
+
+## Reading a result
+
+Every skill gets one card:
+
+```
+writing-plans                 without the skill → with it
+  Results            3/3 → 3/3        did what the task asked
+  Follows the skill  0/3 → 3/3        kept the rules the skill states
+  Cost               $0.13 → $0.22 (+69%)
+  Time               50 s → 82 s
+  Verdict: Same results, follows the skill's format, costs 69% more.
+```
+
+Below it, every case side by side: the page Claude built (in a frame that runs no script) or the text it
+wrote, with what a failed rule points at highlighted, and every check ticked or crossed in plain words.
+
+**The bar.** Each check is one of two kinds, fixed in the repository before anyone runs:
+
+- **Result**: something the task itself asks for, so Claude without the skill has a fair chance at it.
+  It must not depend on format ("L3", "line 3" and "第 3 行" all count).
+- **Rule**: something the skill tells Claude to do. It quotes the skill's own sentence, and the tests fail if
+  the quote is not in the skill. A rule the skill does not state cannot be checked.
+
+The verdict follows fixed rules: results first (better / worse), then format ("same results, follows the
+skill's format"), then cost. Following the skill's rules is not counted as doing better: without the skill,
+Claude was never told them.
 
 ## Verify a skill (about 5 minutes)
 
@@ -70,7 +98,9 @@ skills/<name>/cases/<case>/_bench/trivial*/     answers that must fail
 - Write at least three cases. Good cases are small, need what the skill teaches, and are graded by a program.
 - `python bench.py check-cases` must pass: every `ref*` answer passes and every `trivial*` answer fails.
 - Checks live in `checks.py`, or in the skill's own `cases/check.py`: `check(folder, expect)` returns
-  `{check name: passed}`. It reads the files Claude wrote and never runs them. Either one is reviewed like code,
+  `{check name: passed}`, and `ABOUT` says what each check is (kind, plain words in English and Chinese,
+  the quoted sentence for a rule, optionally a pattern to highlight when it fails). It reads the files
+  Claude wrote and never runs them. An imported skill needs at least one result check. Either one is reviewed like code,
   and results are always re-graded with the copy on the main branch.
 - A skill you did not write keeps its author, its source (repository and commit) and its licence file. Its author
   is the upstream owner, who therefore cannot verify it.

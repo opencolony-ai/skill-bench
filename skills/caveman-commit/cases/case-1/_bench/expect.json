@@ -4,5 +4,13 @@
   "fix"
  ],
  "breaking": false,
- "issue": 214
+ "issue": 214,
+ "mentions": [
+  [
+   "coupon"
+  ],
+  [
+   "#214"
+  ]
+ ]
 }

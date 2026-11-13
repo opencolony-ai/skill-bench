@@ -39,3 +39,20 @@ def check(folder, e):
         "responsive": bool(re.search(r"@media[^{]*(max|min)-width", css)) or bool(re.search(r"clamp\(|minmax\(|auto-fit|auto-fill", css)),
         "content": all(s.lower() in t.lower() for s in e["text"]),
     }
+
+
+ABOUT = {
+    "content": {"kind": "result", "en": "a page for the brief, with its content", "zh": "照題目內容做出頁面"},
+    "no_all_caps_labels": {"kind": "rule", "en": "no all-caps labels", "zh": "沒有全大寫的小標", "quote": "Using all caps for labels.",
+                           "flag": r"(?i)text-transform\s*:\s*uppercase"},
+    "no_arrow_suffix": {"kind": "rule", "en": "no → on links and buttons", "zh": "連結和按鈕不加 →", "quote": "appended to link and button text",
+                        "flag": r"→|&rarr;"},
+    "no_middot_meta": {"kind": "rule", "en": "no 'A · B · C' meta strings", "zh": "沒有「A · B · C」式的資訊串", "quote": "meta strings joined with middle dots",
+                       "flag": r"\s(·|&middot;)\s"},
+    "no_default_palette": {"kind": "rule", "en": "not the cream / terracotta / near-black defaults", "zh": "沒用米色、赤陶色、近黑色這些預設色",
+                           "quote": "a warm cream background (near #F4F1EA)"},
+    "no_default_shadow": {"kind": "rule", "en": "not the soft grey card shadow", "zh": "沒用預設的淡灰卡片陰影", "quote": "the same soft grey shadow (rgba(0,0,0,.1))"},
+    "keyboard_focus": {"kind": "rule", "en": "visible keyboard focus", "zh": "鍵盤焦點看得見", "quote": "visible keyboard focus"},
+    "reduced_motion": {"kind": "rule", "en": "respects reduced motion when anything moves", "zh": "有動畫時尊重「減少動態」設定", "quote": "reduced motion respected"},
+    "responsive": {"kind": "rule", "en": "works down to phone width", "zh": "手機寬度也能用", "quote": "responsive down to mobile"},
+}

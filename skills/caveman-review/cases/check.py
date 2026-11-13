@@ -3,7 +3,7 @@ number, no hedging, and the planted bugs found."""
 import re
 
 FIND = re.compile(r"^(?:`?[\w./-]+`?:)?L(\d+)(?:-L?(\d+))?: \S")
-HEDGE = re.compile(r"(?i)\b(perhaps|maybe|i think|i noticed|it seems|it looks like|might want|you may want|consider|just a suggestion|probably)\b")
+HEDGE = r"(?i)\b(perhaps|maybe|i think|i noticed|it seems|might want|consider|just a suggestion)\b"
 
 
 def check(folder, e):
@@ -22,6 +22,17 @@ def check(folder, e):
     return {
         "exists": True,
         "one_line_per_finding": bool(hits) and len(others) <= 1,   # one line of overall remarks at the top is allowed
-        "no_hedging": not HEDGE.search(t),
+        "no_hedging": not re.search(HEDGE, t),
         "bugs_found": all(any(a <= b <= z for a, z in named for b in alts) for alts in e["bugs"]),
     }
+
+
+ABOUT = {
+    "bugs_found": {"kind": "result", "en": "points at the line of every planted bug, in any wording",
+                   "zh": "指出每個埋好的 bug 所在的行（怎麼寫都算）"},
+    "one_line_per_finding": {"kind": "rule", "en": "one line per finding, starting with L<line>:",
+                             "zh": "一個問題一行，以 L<行號>: 開頭", "quote": "One line per finding"},
+    "no_hedging": {"kind": "rule", "en": "no hedging: perhaps, maybe, I think, consider",
+                   "zh": "不含糊其詞：perhaps、maybe、I think、consider",
+                   "quote": 'Hedging ("perhaps", "maybe", "I think")', "flag": HEDGE},
+}

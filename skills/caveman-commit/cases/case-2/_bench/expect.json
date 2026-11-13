@@ -5,5 +5,15 @@
   "refactor",
   "fix"
  ],
- "breaking": true
+ "breaking": true,
+ "mentions": [
+  [
+   "timeout_ms"
+  ],
+  [
+   "break",
+   "removed",
+   "no longer"
+  ]
+ ]
 }

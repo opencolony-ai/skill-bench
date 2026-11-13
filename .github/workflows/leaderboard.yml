@@ -2,7 +2,7 @@ name: leaderboard
 on:
   push:
     branches: [main]
-    paths: ["results/**", "skills/**", "bench.py", "checks.py"]
+    paths: ["results/**", "skills/**", "bench.py", "checks.py", "report.py"]
 permissions:
   contents: write
 

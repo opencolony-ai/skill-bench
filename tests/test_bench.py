@@ -25,7 +25,12 @@ def fake_result(user, none_ok, skill_ok, skill=SKILL, version=None):
         cases = {}
         for i, c in enumerate(bench.case_dirs(skill)):
             out = answers(c, "ref" if i < n else "trivial")
-            cases[c.name] = {"pass": i < n, "checks": {}, "outputs": out}
+            with tempfile.TemporaryDirectory() as tmp:
+                bench.copy_inputs(c, Path(tmp))
+                for fn, text in out.items():
+                    (Path(tmp) / fn).write_text(text, encoding="utf-8")
+                got = bench.checks.grade(bench.expect_of(c), tmp)
+            cases[c.name] = {"pass": i < n, "checks": got, "outputs": out}
         arms[arm] = {"cases": cases, "usage": {"total_tokens": 1000}, "skill_used": arm == "skill"}
     return {"schema": bench.SCHEMA, "skill": skill, "version": version or bench.version(skill), "user": user,
             "finished": "2026-11-13T00:00:00+00:00", "arms": arms}
@@ -153,6 +158,68 @@ class Bench(unittest.TestCase):
             r = bench.checks.grade(bench.expect_of(case), tmp)
         self.assertFalse(all(r.values()))
 
+    def test_every_check_says_what_it_is_and_every_rule_quotes_its_skill(self):
+        import re
+        norm = lambda x: re.sub(r"\s+", " ", x).strip().lower()
+        for name in bench.skill_names():
+            meta = bench.skill_meta(name)
+            if meta["cases_from"] != name:
+                continue
+            text = norm(" ".join(f.read_text(encoding="utf-8") for f in (bench.SKILLS / name).rglob("*.md")
+                                 if "cases" not in f.relative_to(bench.SKILLS / name).parts))
+            for c in bench.case_dirs(name):
+                e = bench.expect_of(c)
+                about = bench.checks.about(e)
+                ref = next(p for p in (c / "_bench").iterdir() if p.name.startswith("ref"))
+                with tempfile.TemporaryDirectory() as tmp:
+                    bench.copy_inputs(c, Path(tmp))
+                    for f in ref.iterdir():
+                        shutil.copy2(f, Path(tmp) / f.name)
+                    names = bench.checks.grade(e, tmp)
+                for n in names:
+                    self.assertIn(n, about, f"{name}/{c.name}: check {n} has no ABOUT entry")
+                    a = about[n]
+                    self.assertIn(a["kind"], ("result", "rule"), n)
+                    self.assertTrue(a.get("en") and a.get("zh"), n)
+                    if a["kind"] == "rule":  # a rule the skill does not state cannot be checked
+                        self.assertIn(norm(a["quote"]), text, f"{name}: the quote for {n} is not in the skill")
+                    if a.get("flag"):
+                        re.compile(a["flag"])
+                self.assertTrue(any(about[n]["kind"] == "result" and n != "exists" for n in names) or meta["author"] == "opencolony-ai",
+                                f"{name}: an imported skill needs at least one result check")
+
+    def test_the_verdict_reads_results_first_then_format_then_cost(self):
+        base = {"result_none": 2, "result_skill": 2, "rule_none": 0, "rule_skill": 3, "cost_none": 0.10, "cost_skill": 0.15}
+        self.assertEqual(bench.verdict(base), ("format", 50))
+        self.assertEqual(bench.verdict({**base, "result_skill": 3})[0], "better")
+        self.assertEqual(bench.verdict({**base, "result_skill": 1})[0], "worse")
+        self.assertEqual(bench.verdict({**base, "rule_skill": 0})[0], "none")
+        s = {**base, "verdict": "format", "cost_change": 50}
+        self.assertEqual(bench.verdict_text(s, "zh"), "結果一樣，只改了格式，多花 50%")
+        self.assertEqual(bench.verdict_text({**s, "cost_change": -3}), "Same results, follows the skill's format, about the same cost")
+
+    def test_results_and_rules_are_counted_apart(self):
+        r = fake_result("ann", 0, 3)
+        ab = bench._abouts(SKILL)
+        none, skill = bench.split(r, "none", ab), bench.split(r, "skill", ab)
+        self.assertEqual((none["rule"], skill["rule"]), (0, 3))
+        self.assertEqual(skill["result"], 3)
+
+    def test_the_report_escapes_what_claude_wrote_and_runs_none_of_it(self):
+        import report
+        for u in ("ann", "bob", "cy"):
+            r = fake_result(u, 0, 3)
+            r["arms"]["skill"]["cases"]["case-1"]["outputs"] = {"COMMIT_MSG": "<script>alert(1)</script>",
+                                                                 "page.html": "<script>alert(2)</script>"}
+            self.put(r)
+        out = self.tmp / "site"
+        report.build(out)
+        text = (out / "index.html").read_text(encoding="utf-8")
+        self.assertNotIn("<script>alert", text)
+        self.assertIn('sandbox=""', text)
+        self.assertIn("conventional-commit", text)
+        self.assertIn("結果一樣", (out / "zh-TW.html").read_text(encoding="utf-8"))
+
     def test_imported_skills_name_their_source_and_licence(self):
         for name in bench.skill_names():
             meta = bench.skill_meta(name)
@@ -200,7 +267,7 @@ class Bench(unittest.TestCase):
             text = (self.tmp / "LEADERBOARD.md").read_text()
         finally:
             bench.ROOT = old
-        self.assertIn(f"| [{SKILL}](skills/{SKILL}/SKILL.md) | ✅ consistent | 0/3 | 3/3 | +3 | 3/3 runs | 3/3 |", text)
+        self.assertIn(f"| [{SKILL}](skills/{SKILL}/SKILL.md) | Same results, follows the skill's format | 3/3 → 3/3 | 0/3 → 3/3 | - | - | 3/3 runs | 3/3 ✅ consistent |", text)
         for n in bench.skill_names():
             self.assertIn(f"[{n}]", text)
 
