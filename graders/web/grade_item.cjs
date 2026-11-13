@@ -83,7 +83,14 @@ async function layer1(browser, url, work) {
 
 async function brief(browser, url, must) {
   const { context, page } = await openPage(browser, url, { width: 1280 });
-  const text = (await page.evaluate(() => document.body.innerText || "")).replace(/\s+/g, " ");
+  // what a person can read on the page, including the choices inside a select
+  // what the page offers a person, including later steps of a form and the choices inside a select: all
+  // of its text except scripts and styles
+  const text = (await page.evaluate(() => {
+    const c = document.body.cloneNode(true);
+    c.querySelectorAll("script,style,template,noscript").forEach((e) => e.remove());
+    return (document.body.innerText || "") + " " + (c.textContent || "");
+  })).replace(/\s+/g, " ");
   const low = text.toLowerCase();
   const out = {};
   for (const m of must || []) {
@@ -234,7 +241,10 @@ async function behaviour(browser, url, list) {
       await page.waitForTimeout(400);
       const a = b.assert;
       if (a.count !== undefined) ok = (await page.locator(a.selector).count()) === a.count;
-      else if (a.text) ok = ((await page.evaluate(() => document.body.innerText)) || "").toLowerCase().includes(a.text.toLowerCase());
+      else if (a.text || a.text_any) {
+        const body = ((await page.evaluate(() => document.body.innerText)) || "").toLowerCase();
+        ok = (a.text_any || [a.text]).some((t) => body.includes(t.toLowerCase()));
+      }
       else if (a.visible) ok = await page.locator(a.visible).first().isVisible();
       ok = ok && errors.length === 0;
     } catch (e) { note = String(e).slice(0, 160); }

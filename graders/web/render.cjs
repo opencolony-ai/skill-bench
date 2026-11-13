@@ -17,9 +17,18 @@ const WIDTHS = [320, 768, 1280];
 
 async function measure(page, width) {
   return page.evaluate((width) => {
+    // hidden on purpose: inside a box of 2 px or less that clips (the usual "visually hidden" text for
+    // screen readers), which people never see
+    const hiddenBox = (el) => {
+      for (let a = el; a && a !== document.body; a = a.parentElement) {
+        const s = getComputedStyle(a), r = a.getBoundingClientRect();
+        if ((r.width <= 2 || r.height <= 2) && (/hidden|clip/.test(s.overflow + s.overflowX + s.overflowY) || s.clip !== "auto" || s.clipPath !== "none")) return true;
+      }
+      return false;
+    };
     const vis = (el) => {
       const s = getComputedStyle(el), r = el.getBoundingClientRect();
-      return s.visibility !== "hidden" && s.display !== "none" && +s.opacity > 0.05 && r.width > 0 && r.height > 0;
+      return s.visibility !== "hidden" && s.display !== "none" && +s.opacity > 0.05 && r.width > 0 && r.height > 0 && !hiddenBox(el);
     };
     const all = [...document.body.querySelectorAll("*")].filter(vis);
     const ownText = (el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1);
@@ -96,12 +105,16 @@ async function focusVisible(page, limit = 12) {
     const box = await page.evaluate(() => {
       const el = document.activeElement;
       if (!el || el === document.body) return null;
-      el.scrollIntoView({ block: "center" });
+      el.scrollIntoView({ block: "center", behavior: "instant" });   // pages with smooth scrolling would still be moving
       const r = el.getBoundingClientRect();
       return { x: Math.max(0, r.left - 6), y: Math.max(0, r.top - 6), width: r.width + 12, height: r.height + 12 };
     });
     if (!box || box.width < 2 || box.height < 2) continue;
-    const clip = { x: box.x, y: box.y, width: Math.min(box.width, 1200), height: Math.min(box.height, 600) };
+    await page.waitForTimeout(50);
+    const vp = page.viewportSize();
+    const clip = { x: Math.min(box.x, vp.width - 2), y: Math.min(box.y, vp.height - 2) };
+    clip.width = Math.max(1, Math.min(box.width, vp.width - clip.x));
+    clip.height = Math.max(1, Math.min(box.height, vp.height - clip.y));
     const focused = await page.screenshot({ clip });
     await page.evaluate(() => { window.__f = document.activeElement; document.activeElement.blur(); });
     const plain = await page.screenshot({ clip });

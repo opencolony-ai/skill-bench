@@ -1,0 +1,8 @@
+{
+ "author": "opencolony-ai",
+ "exam": "frontend",
+ "control": "sabotaged",
+ "license": "Apache-2.0",
+ "source": "https://github.com/anthropics/skills/tree/2c5958ecac7cee2b583967a2c4981d0f4a75c579/skills/frontend-design",
+ "note": "A control for the front-end exam: frontend-design with its key rules reversed (all caps, motion everywhere, cream and terracotta, desktop only, no focus outlines, generic CTAs, vague errors). A sound exam scores it below the real skill."
+}

@@ -163,7 +163,7 @@ class Bench(unittest.TestCase):
         norm = lambda x: re.sub(r"\s+", " ", x).strip().lower()
         for name in bench.skill_names():
             meta = bench.skill_meta(name)
-            if meta["cases_from"] != name:
+            if meta["cases_from"] != name or meta.get("exam"):   # exam items are checked once, by check-cases
                 continue
             text = norm(" ".join(f.read_text(encoding="utf-8") for f in (bench.SKILLS / name).rglob("*.md")
                                  if "cases" not in f.relative_to(bench.SKILLS / name).parts))

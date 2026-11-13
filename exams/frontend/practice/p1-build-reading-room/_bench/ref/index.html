@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fernhill Reading Room</title>
+<meta name="description" content="Fernhill Reading Room: a free, volunteer-run lending library in the Old Station Building. Open Tuesday to Saturday, 10:00 to 17:00.">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fbf7ef;
+    --surface: #ffffff;
+    --ink: #1f2a24;
+    --muted: #46524b;
+    --green: #1e5b3a;
+    --green-dark: #154329;
+    --green-tint: #e5efe8;
+    --red: #8a2b1e;
+    --red-tint: #f7e6e2;
+    --line: #d8cfbf;
+    --focus: #0b3d91;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.1875rem; /* 19px: comfortable for older readers */
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+  a { color: var(--green); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  a:hover { color: var(--green-dark); }
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  .skip {
+    position: absolute;
+    left: 1rem;
+    top: -10rem;
+    background: var(--surface);
+    color: var(--ink);
+    padding: .75rem 1rem;
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    z-index: 10;
+  }
+  .skip:focus { top: 1rem; }
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 1rem; }
+
+  header.site {
+    background: var(--green);
+    color: #fff;
+    padding: 1.25rem 0 2rem;
+  }
+  .eyebrow {
+    margin: 0 0 .25rem;
+    font-size: 1rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  h1 {
+    margin: 0 0 .5rem;
+    font-size: clamp(2rem, 7vw, 2.75rem);
+    line-height: 1.15;
+  }
+  .lede { margin: 0 0 1.25rem; font-size: 1.25rem; max-width: 34rem; }
+
+  .status {
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 1rem 1.125rem;
+    margin: 0 0 1.25rem;
+    border-left: 8px solid var(--green);
+  }
+  .status.closed { border-left-color: var(--red); }
+  .status p { margin: 0; }
+  .status .now { font-weight: 700; font-size: 1.3rem; line-height: 1.3; }
+  .status .now.open { color: var(--green); }
+  .status .now.closed { color: var(--red); }
+  .status .small { color: var(--muted); font-size: 1rem; margin-top: .25rem; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    padding: .7rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    text-decoration: none;
+    text-align: center;
+    border: 2px solid transparent;
+  }
+  .btn-light { background: #fff; color: var(--green-dark); }
+  .btn-light:hover { background: var(--green-tint); color: var(--green-dark); }
+  .btn-outline { background: transparent; color: #fff; border-color: #fff; }
+  .btn-outline:hover { background: var(--green-dark); color: #fff; }
+  header.site :focus-visible { outline-color: #fff; }
+  .btn-solid { background: var(--green); color: #fff; }
+  .btn-solid:hover { background: var(--green-dark); color: #fff; }
+
+  main section { padding: 2rem 0 .5rem; }
+  h2 {
+    font-size: 1.6rem;
+    line-height: 1.25;
+    margin: 0 0 .75rem;
+  }
+  h3 { font-size: 1.25rem; line-height: 1.3; margin: 0 0 .25rem; }
+  p { margin: 0 0 1rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.125rem;
+    margin-bottom: 1rem;
+  }
+
+  table.hours { width: 100%; border-collapse: collapse; }
+  .hours th, .hours td {
+    text-align: left;
+    padding: .6rem .5rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .hours tr:last-child th, .hours tr:last-child td { border-bottom: 0; }
+  .hours th { font-weight: 600; }
+  .hours td.shut { color: var(--red); font-weight: 600; }
+  .hours tr.today { background: var(--green-tint); }
+  .hours tr.today th::after {
+    content: " (today)";
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .join { border-left: 8px solid var(--green); }
+  .big-free { font-size: 1.3rem; font-weight: 700; }
+  ol.steps { margin: 0 0 1rem; padding-left: 1.5rem; }
+  ol.steps li { margin-bottom: .6rem; padding-left: .25rem; }
+
+  ul.events { list-style: none; margin: 0; padding: 0; }
+  ul.events li {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem 1.125rem;
+    margin-bottom: .75rem;
+  }
+  .when { margin: 0; color: var(--muted); }
+
+  address { font-style: normal; }
+  dl.contact { margin: 0; }
+  dl.contact dt { font-weight: 700; margin-top: .75rem; }
+  dl.contact dt:first-child { margin-top: 0; }
+  dl.contact dd { margin: 0; }
+  dl.contact a { overflow-wrap: anywhere; }
+
+  footer {
+    margin-top: 2rem;
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 1rem;
+  }
+  footer p { margin: 0; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="site">
+  <div class="wrap">
+    <p class="eyebrow">Old Station Building, Fernhill</p>
+    <h1>Fernhill Reading Room</h1>
+    <p class="lede">A free lending library in the old railway station, run by volunteers for everyone who lives in Fernhill.</p>
+
+    <div class="status" id="status" role="status">
+      <p class="now" id="status-now">Open Tuesday to Saturday, 10:00–17:00</p>
+      <p class="small" id="status-detail">Closed Sunday and Monday.</p>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-light" href="#join">How to join (it’s free)</a>
+      <a class="btn btn-outline" href="#hours">Opening hours</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+
+    <section id="hours" aria-labelledby="hours-title">
+      <h2 id="hours-title">Opening hours</h2>
+      <p>Tuesday to Saturday, 10:00–17:00. Closed Sunday and Monday.</p>
+      <div class="card">
+        <table class="hours">
+          <caption class="visually-hidden">Opening hours by day</caption>
+          <tbody>
+            <tr data-day="1"><th scope="row">Monday</th><td class="shut">Closed</td></tr>
+            <tr data-day="2"><th scope="row">Tuesday</th><td>10:00–17:00</td></tr>
+            <tr data-day="3"><th scope="row">Wednesday</th><td>10:00–17:00</td></tr>
+            <tr data-day="4"><th scope="row">Thursday</th><td>10:00–17:00</td></tr>
+            <tr data-day="5"><th scope="row">Friday</th><td>10:00–17:00</td></tr>
+            <tr data-day="6"><th scope="row">Saturday</th><td>10:00–17:00</td></tr>
+            <tr data-day="0"><th scope="row">Sunday</th><td class="shut">Closed</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="join" aria-labelledby="join-title">
+      <h2 id="join-title">Become a member</h2>
+      <div class="card join">
+        <p class="big-free">Membership is free for anyone who lives in Fernhill.</p>
+        <p>To join, bring these two things to the desk:</p>
+        <ol class="steps">
+          <li><strong>A photo ID</strong></li>
+          <li><strong>A proof of address</strong> – a bill or a letter from the council</li>
+        </ol>
+        <p>Come in any time we are open: Tuesday to Saturday, 10:00–17:00.</p>
+        <a class="btn btn-solid" href="#visit">Where to find us</a>
+      </div>
+    </section>
+
+    <section id="events" aria-labelledby="events-title">
+      <h2 id="events-title">Coming up</h2>
+      <ul class="events">
+        <li>
+          <h3>Story time for under-fives</h3>
+          <p class="when">Saturdays at 10:30</p>
+        </li>
+        <li>
+          <h3>Large-print book swap</h3>
+          <p class="when">First Tuesday of the month</p>
+        </li>
+        <li>
+          <h3>Family history help desk</h3>
+          <p class="when">Thursdays, 14:00–16:00</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="visit" aria-labelledby="visit-title">
+      <h2 id="visit-title">Find us and get in touch</h2>
+      <div class="card">
+        <dl class="contact">
+          <dt>Address</dt>
+          <dd><address>Old Station Building<br>1 Platform Road<br>Fernhill</address></dd>
+          <dt>Email</dt>
+          <dd><a href="mailto:hello@fernhill-reading.example">hello@fernhill-reading.example</a></dd>
+          <dt>Phone</dt>
+          <dd><a href="tel:+441632960412">01632 960 412</a></dd>
+        </dl>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Fernhill Reading Room is run by volunteers. Old Station Building, 1 Platform Road, Fernhill.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var OPEN = 10 * 60, CLOSE = 17 * 60;
+  var NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  function isOpenDay(d) { return d >= 2 && d <= 6; }
+
+  var now = new Date();
+  var day = now.getDay();
+  var mins = now.getHours() * 60 + now.getMinutes();
+
+  var row = document.querySelector('.hours tr[data-day="' + day + '"]');
+  if (row) row.className = "today";
+
+  var box = document.getElementById("status");
+  var headline = document.getElementById("status-now");
+  var detail = document.getElementById("status-detail");
+  if (!box || !headline || !detail) return;
+
+  if (isOpenDay(day) && mins >= OPEN && mins < CLOSE) {
+    headline.textContent = "Open now, until 17:00 today";
+    headline.className = "now open";
+    detail.textContent = "Open Tuesday to Saturday, 10:00–17:00. Closed Sunday and Monday.";
+    return;
+  }
+
+  var next;
+  if (isOpenDay(day) && mins < OPEN) {
+    next = "today at 10:00";
+  } else {
+    var d = (day + 1) % 7;
+    while (!isOpenDay(d)) d = (d + 1) % 7;
+    next = (d === (day + 1) % 7 ? "tomorrow (" + NAMES[d] + ")" : NAMES[d]) + " at 10:00";
+  }
+  headline.textContent = "Closed now. Opens " + next;
+  headline.className = "now closed";
+  box.className = "status closed";
+  detail.textContent = "Open Tuesday to Saturday, 10:00–17:00. Closed Sunday and Monday.";
+})();
+</script>
+</body>
+</html>

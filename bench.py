@@ -20,6 +20,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import platform
 import random
 import shutil
@@ -34,13 +35,21 @@ import checks
 ROOT = Path(__file__).resolve().parent
 SKILLS = ROOT / "skills"
 RESULTS = ROOT / "results"
+EXAMS = ROOT / "exams"     # shared exams: one per colony; practice items here, scored items private
 SCHEMA = 1
 NEED = 3          # independent verifiers before a result counts
 TOLERANCE = 1     # a verifier agrees when each arm is within this many cases of the median
-ARMS = ("none", "skill")
+ARMS = ("none", "skill")            # every result has these
+KNOWN_ARMS = ("none", "skill", "named")   # named: the task also says "use the <skill> skill" (by-name skills)
 PROMPT = ("Do each task in the case-* folders of the current folder: read its task.md and do what it asks, "
           "writing your outputs inside that same case folder. Work only inside the current folder. "
           "Do not use the internet.")
+ITEM_PROMPT = ("Read task.md in the current folder and do what it asks, writing your files in the current folder. "
+               "Work only inside the current folder. Do not use the internet.")
+
+
+def named(prompt: str, name: str) -> str:
+    return prompt + f" Use the {name} skill for this work."
 
 
 class BenchError(Exception):
@@ -64,8 +73,22 @@ def skill_names() -> list[str]:
 
 
 def case_dirs(name: str) -> list[Path]:
-    src = SKILLS / skill_meta(name)["cases_from"] / "cases"
+    meta = skill_meta(name)
+    if meta.get("exam"):
+        return exam_items(meta["exam"])
+    src = SKILLS / meta["cases_from"] / "cases"
     return sorted(p for p in src.iterdir() if p.is_dir() and (p / "task.md").is_file()) if src.is_dir() else []
+
+
+def exam_items(exam: str) -> list[Path]:
+    """A shared exam: its public practice items, plus the scored items when SKILL_BENCH_EXAMS points at a
+    checkout of the private exams repository. SKILL_BENCH_ITEMS (comma-separated names) narrows it."""
+    dirs = sorted(p for p in (EXAMS / exam / "practice").glob("*") if (p / "task.md").is_file())
+    private = os.environ.get("SKILL_BENCH_EXAMS")
+    if private:
+        dirs += sorted(p for p in (Path(private) / exam).glob("*") if (p / "task.md").is_file())
+    only = [x.strip() for x in os.environ.get("SKILL_BENCH_ITEMS", "").split(",") if x.strip()]
+    return [d for d in dirs if not only or d.name in only]
 
 
 def _files(d: Path) -> list[Path]:
@@ -79,12 +102,18 @@ def version(name: str) -> str:
     d = SKILLS / name
     own = [q for q in _files(d) if q.name != "skill.json" and "cases" not in q.relative_to(d).parts]
     src = SKILLS / skill_meta(name)["cases_from"] / "cases"
-    for p in own + [q for c in case_dirs(name) for q in _files(c)] + [q for q in [src / "check.py"] if q.is_file()]:
-        h.update(str(p.relative_to(SKILLS)).encode() + b"\0" + p.read_bytes() + b"\0")
+    files = [(q.relative_to(SKILLS), q) for q in own]
+    files += [(q.relative_to(SKILLS) if q.is_relative_to(SKILLS) else Path(c.name) / q.relative_to(c), q)
+              for c in case_dirs(name) for q in _files(c)]
+    files += [(q.relative_to(SKILLS), q) for q in [src / "check.py"] if q.is_file()]
+    for rel, p in files:
+        h.update(str(rel).encode() + b"\0" + p.read_bytes() + b"\0")
     return h.hexdigest()[:12]
 
 
 def expect_of(case: Path) -> dict:
+    if (case / "_bench" / "item.json").is_file():   # an exam item, graded by graders/web
+        return {"check": "exam", "_item": str(case)}
     e = json.loads((case / "_bench" / "expect.json").read_text(encoding="utf-8"))
     if e.get("check") == "script":  # the skill's own checker, cases/check.py, reviewed like checks.py
         e["_script"] = str(case.parent / "check.py")
@@ -292,26 +321,27 @@ def _skill_used(tools: list[dict], name: str) -> bool:
     return False
 
 
-def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: int) -> dict:
-    where.mkdir(parents=True)
-    for c in case_dirs(name):
-        (where / c.name).mkdir()
-        copy_inputs(c, where / c.name)
-    if arm == "skill":  # Claude Code finds project skills in .claude/skills/<name>/
-        dst = where / ".claude" / "skills" / name
-        dst.mkdir(parents=True)
-        for p in (SKILLS / name).iterdir():
-            if p.name not in ("cases", "skill.json"):
-                (shutil.copytree if p.is_dir() else shutil.copy2)(p, dst / p.name)
-    # Files only: no shell, no web. Both arms work under the same rules, and a skill from a stranger
+def _install(name: str, where: Path) -> None:
+    """Claude Code finds project skills in .claude/skills/<name>/."""
+    dst = where / ".claude" / "skills" / name
+    dst.mkdir(parents=True)
+    for p in (SKILLS / name).iterdir():
+        if p.name not in ("cases", "skill.json"):
+            (shutil.copytree if p.is_dir() else shutil.copy2)(p, dst / p.name)
+
+
+def _session(claude: str, prompt: str, where: Path, model: str, timeout: int, max_turns: int) -> tuple:
+    """One Claude Code session in `where`, after a warm-up on the same setup. Returns (result, tools,
+    ok, error, warm-up usage)."""
+    # Files only: no shell, no web. Every arm works under the same rules, and a skill from a stranger
     # cannot make Claude run commands on the verifier's computer. The verifier's own skills, plugins
-    # and MCP servers stay out (user settings are not loaded), so both arms see only Claude Code's
-    # built-in skills, plus this skill in the skill arm.
+    # and MCP servers stay out (user settings are not loaded), so every arm sees only Claude Code's
+    # built-in skills, plus the skill being measured where it is installed.
     flags = ["--output-format", "stream-json", "--verbose", "--model", model,
              "--permission-mode", "acceptEdits", "--setting-sources", "project,local",
              "--strict-mcp-config", "--disallowedTools", "Bash", "WebFetch", "WebSearch"]
     # Warm the prompt cache first, with the same setup and a request that touches nothing, so that
-    # neither arm pays for writing Claude Code's own prompt into the cache and the other gets it free.
+    # no arm pays for writing Claude Code's own prompt into the cache while another gets it free.
     # Its cost is recorded apart and not counted.
     warm = {}
     try:
@@ -320,24 +350,65 @@ def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: 
         warm = _usage(_read_stream(w.stdout)[0])
     except (OSError, subprocess.TimeoutExpired):
         pass
-    cmd = [claude, "-p", PROMPT, "--max-turns", "60"] + flags
-    started = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     try:
-        p = subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=timeout)
+        p = subprocess.run([claude, "-p", prompt, "--max-turns", str(max_turns)] + flags, cwd=where,
+                           capture_output=True, text=True, timeout=timeout)
         js, tools = _read_stream(p.stdout)
         ok = p.returncode == 0 and bool(js) and not js.get("is_error")
         err = None if ok else (js.get("result") or p.stderr or f"exit {p.returncode}")[-500:]
     except (OSError, subprocess.TimeoutExpired) as e:
         js, tools, ok, err = {}, [], False, str(e)[-500:]
-    out = {"started": started, "usage": _usage(js), "warmup_usage": warm, "tools": _tool_counts(tools),
+    return js, tools, ok, err, warm
+
+
+def _add_usage(a: dict, b: dict) -> dict:
+    out = dict(a)
+    for k, v in b.items():
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            out[k] = (out.get(k) or 0) + v
+        elif isinstance(v, list):
+            out[k] = sorted(set(out.get(k) or []) | set(v)) if k == "models" else (out.get(k) or []) + v
+    return out
+
+
+def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: int) -> dict:
+    """One arm: none (no skill), skill (installed; Claude decides whether to open it) or named (installed,
+    and the task says to use it). Ordinary skills run all their cases in one session; an exam runs each
+    item in its own session and folder, as a person would ask for one piece of work at a time."""
+    where.mkdir(parents=True)
+    exam = bool(skill_meta(name).get("exam"))
+    cases = case_dirs(name)
+    started = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    if not exam:
+        for c in cases:
+            (where / c.name).mkdir()
+            copy_inputs(c, where / c.name)
+        if arm != "none":
+            _install(name, where)
+        js, tools, ok, err, warm = _session(claude, named(PROMPT, name) if arm == "named" else PROMPT, where, model, timeout, 60)
+        usage, errs = _usage(js), ([err] if err else [])
+    else:
+        usage, warm, tools, errs, ok = {}, {}, [], [], True
+        for c in cases:
+            d = where / c.name
+            d.mkdir()
+            copy_inputs(c, d)
+            if arm != "none":
+                _install(name, d)
+            js, t, k, e, w = _session(claude, named(ITEM_PROMPT, name) if arm == "named" else ITEM_PROMPT, d, model, timeout, 80)
+            usage, warm, tools = _add_usage(usage, _usage(js)), _add_usage(warm, w), tools + t
+            ok = ok and k
+            if e:
+                errs.append(f"{c.name}: {e}")
+    out = {"started": started, "usage": usage, "warmup_usage": warm, "tools": _tool_counts(tools),
            "skill_used": _skill_used(tools, name), "cases": grade_arm(name, where)}
     wrote = any(c["outputs"] for c in out["cases"].values())
-    if not wrote and (not ok or out["usage"]["permission_denials"]):
+    if not wrote and (not ok or usage.get("permission_denials")):
         # nothing came of it and the tool refused it something: the environment, not the skill
-        out["could_not_run"] = err or (f"{out['usage']['permission_denials']} action(s) refused by Claude Code's permissions: "
-                                       + ", ".join(out["usage"]["refused"]))
-    elif err:
-        out["error"] = err
+        out["could_not_run"] = "; ".join(errs) or (f"{usage.get('permission_denials')} action(s) refused by Claude Code's "
+                                                   "permissions: " + ", ".join(usage.get("refused") or []))
+    elif errs:
+        out["error"] = "; ".join(errs)[-1000:]
     return out
 
 
@@ -351,7 +422,7 @@ def grade_arm(name: str, where: Path) -> dict:
         for p in sorted(got.iterdir()) if got.is_dir() else []:
             if p.is_file() and (p.name not in inputs or p.read_bytes() != (c / p.name).read_bytes()):
                 try:
-                    outputs[p.name] = p.read_text(encoding="utf-8")[:20000]
+                    outputs[p.name] = p.read_text(encoding="utf-8")[:200000]
                 except UnicodeDecodeError:
                     outputs[p.name] = None  # not text: not published
         res[c.name] = {"pass": all(r.values()), "checks": r, "outputs": outputs}
@@ -364,15 +435,18 @@ def cmd_run(a) -> None:
     claude = shutil.which(a.claude) or a.claude
     base = Path(a.workdir or tempfile.gettempdir()) / "skill-bench" / \
         f"{name}-{version(name)}-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    print(f"{name}: {len(case_dirs(name))} cases, two runs (without and with the skill) in {base}")
+    wanted = [x.strip() for x in a.arms.split(",") if x.strip()]
+    if not set(ARMS) <= set(wanted) or not set(wanted) <= set(KNOWN_ARMS):
+        raise BenchError(f"--arms must include {', '.join(ARMS)} and may add: {', '.join(set(KNOWN_ARMS) - set(ARMS))}")
+    print(f"{name}: {len(case_dirs(name))} cases, arms {', '.join(wanted)}, in {base}")
     arms = {}
-    for arm in ARMS:  # outside this repository, so no CLAUDE.md or skill from here leaks in
+    for arm in wanted:  # outside this repository, so no CLAUDE.md or skill from here leaks in
         print(f"  running: {arm} ...", flush=True)
         arms[arm] = run_arm(name, arm, base / arm, a.model, claude, a.timeout)
         r = arms[arm]
         state = "could not run: " + r["could_not_run"] if r.get("could_not_run") else \
             f"{sum(c['pass'] for c in r['cases'].values())}/{len(r['cases'])} cases pass"
-        print(f"  {arm:5} {state}  ({r['usage']['total_tokens']:,} tokens, ${r['usage']['cost_usd'] or 0:.2f})")
+        print(f"  {arm:5} {state}  ({r['usage'].get('total_tokens') or 0:,} tokens)")
     run = {"schema": SCHEMA, "skill": name, "version": version(name), "author": meta["author"],
            "claude_code": _claude_version(claude), "model_requested": a.model, "os": platform.system(),
            "finished": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "arms": arms}
@@ -417,16 +491,20 @@ def cmd_submit(a) -> None:
 
 def cmd_check_cases(_a) -> None:
     bad = 0
+    exams_seen = set()
     for name in skill_names():
         meta = skill_meta(name)
-        if meta["cases_from"] != name:
-            continue
+        if meta["cases_from"] != name or meta.get("exam") in exams_seen:
+            continue       # shared cases and shared exams are checked once
+        if meta.get("exam"):
+            exams_seen.add(meta["exam"])
+        label = f"exam:{meta['exam']}" if meta.get("exam") else name
         for c in case_dirs(name):
             e = expect_of(c)
             answers = sorted(p for p in (c / "_bench").iterdir() if p.is_dir() and p.name.startswith(("ref", "trivial")))
             for need in ("ref", "trivial"):
                 if not any(p.name.startswith(need) for p in answers):
-                    print(f"BAD {name}/{c.name}: no _bench/{need}/")
+                    print(f"BAD {label}/{c.name}: no _bench/{need}/")
                     bad += 1
             for src in answers:  # every ref* must pass, every trivial* must fail
                 kind, want = src.name, src.name.startswith("ref")
@@ -437,7 +515,7 @@ def cmd_check_cases(_a) -> None:
                     r = checks.grade(e, tmp)
                 ok = all(r.values()) == want
                 bad += not ok
-                print(f"{'ok ' if ok else 'BAD'} {name}/{c.name} {kind:7} " +
+                print(f"{'ok ' if ok else 'BAD'} {label}/{c.name} {kind:7} " +
                       ("" if all(r.values()) else str([k for k, v in r.items() if not v])))
     if bad:
         raise BenchError(f"{bad} case check(s) do not tell a good answer from a bad one")
@@ -472,7 +550,7 @@ def cmd_verify(a) -> None:
         if want != user:
             problems.append(f"file name says {want!r}, result says {user!r}")
         cases = {c.name: c for c in case_dirs(name)}
-        for arm in ARMS:
+        for arm in [x for x in KNOWN_ARMS if x in ARMS or x in (r.get("arms") or {})]:
             got = (r.get("arms") or {}).get(arm)
             if not isinstance(got, dict):
                 problems.append(f"no {arm} arm")
@@ -583,7 +661,8 @@ def main(argv=None) -> int:
     p.add_argument("--model", default="sonnet", help="what Claude Code should use (default: sonnet)")
     p.add_argument("--claude", default="claude", help="path to the claude command")
     p.add_argument("--workdir", help="where the two runs happen (default: the system temp folder)")
-    p.add_argument("--timeout", type=int, default=1200, help="seconds per run")
+    p.add_argument("--timeout", type=int, default=1200, help="seconds per Claude Code session")
+    p.add_argument("--arms", default="none,skill", help="none,skill (default); add named to also tell Claude to use the skill")
     p.set_defaults(fn=cmd_run)
     p = sub.add_parser("submit"); p.add_argument("run"); p.add_argument("--user"); p.set_defaults(fn=cmd_submit)
     p = sub.add_parser("board"); p.add_argument("--check", action="store_true"); p.set_defaults(fn=cmd_board)

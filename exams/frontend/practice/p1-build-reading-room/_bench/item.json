@@ -1,0 +1,98 @@
+{
+ "type": "build",
+ "page": "index.html",
+ "must": [
+  {
+   "id": "hours",
+   "en": "opening hours",
+   "zh": "開放時間",
+   "text_all": [
+    "10:00",
+    "17:00"
+   ]
+  },
+  {
+   "id": "days",
+   "en": "open days and closed days",
+   "zh": "開放日與休館日",
+   "text_all": [
+    "Tuesday",
+    "Saturday",
+    "Sunday",
+    "Monday"
+   ]
+  },
+  {
+   "id": "join",
+   "en": "how to join",
+   "zh": "怎麼加入",
+   "text_all": [
+    "photo ID",
+    "proof of address"
+   ]
+  },
+  {
+   "id": "address",
+   "en": "address",
+   "zh": "地址",
+   "text_any": [
+    "1 Platform Road"
+   ]
+  },
+  {
+   "id": "contact",
+   "en": "contact details",
+   "zh": "聯絡方式",
+   "text_all": [
+    "hello@fernhill-reading.example",
+    "01632 960 412"
+   ]
+  },
+  {
+   "id": "events",
+   "en": "all three events",
+   "zh": "三項活動",
+   "text_all": [
+    "Story time",
+    "book swap",
+    "Family history"
+   ]
+  },
+  {
+   "id": "readable",
+   "en": "body text at least 16 px",
+   "zh": "內文至少 16px",
+   "min_font_px": 16
+  }
+ ],
+ "questions": [
+  {
+   "id": "what",
+   "question": "What is this place, and what can people do there?",
+   "answer_any": [
+    "library",
+    "reading room",
+    "borrow",
+    "books"
+   ]
+  },
+  {
+   "id": "when",
+   "question": "On which days is it open?",
+   "answer_any": [
+    "Tuesday",
+    "Tue"
+   ]
+  },
+  {
+   "id": "next",
+   "question": "What should a new visitor do next, according to the page?",
+   "answer_any": [
+    "join",
+    "member",
+    "bring",
+    "visit"
+   ]
+  }
+ ]
+}

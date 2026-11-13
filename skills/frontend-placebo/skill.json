@@ -1,0 +1,6 @@
+{
+ "author": "opencolony-ai",
+ "exam": "frontend",
+ "control": "placebo",
+ "note": "A control for the front-end exam: as long as frontend-design and in the same voice, but its advice is general and gives Claude nothing it would not do anyway. If the exam rewards it, the exam measures having extra text to read, not what a skill teaches."
+}

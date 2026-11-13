@@ -89,6 +89,15 @@ Then open a pull request with the one file it wrote under `results/`. CI checks 
 - Changing a skill (any file in its folder), any of its cases or its checker gives it a new version; results for
   older versions stop counting.
 
+## Shared exams
+
+Skills that do the same kind of work take the same exam, so they can be compared with each other: a skill
+says so with `"exam": "<colony>"` in its `skill.json`. The front-end exam (`docs/exams/frontend/`) has three
+public practice items in `exams/frontend/practice/` and ten scored items kept in a private repository
+(`SKILL_BENCH_EXAMS=<path to it> python bench.py run <skill>`), each run in its own Claude Code session and
+graded by `graders/web/` in headless Chromium (Node 22 and `npm ci --prefix graders/web`). Skills that run only
+when called by name are measured with a third arm, `--arms none,skill,named`, where the task says to use the skill.
+
 ## Add a skill
 
 A skill is a folder under `skills/`:

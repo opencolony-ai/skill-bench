@@ -169,6 +169,77 @@ KINDS = {"script": script, "commit_message": commit_message, "changelog": change
          "cited_summary": cited_summary, "exact_answer": exact_answer}
 
 
+GRADER = Path(__file__).resolve().parent / "graders" / "web" / "grade_item.cjs"
+
+
+def exam(folder: Path, e: dict) -> dict:
+    """A shared exam item (exams/<colony>/...): graded by graders/web/grade_item.cjs, which renders the
+    page in headless Chromium. Needs node and Playwright. Every check is a result: the item asked for it."""
+    import subprocess
+    import tempfile
+    with tempfile.TemporaryDirectory() as work:
+        p = subprocess.run(["node", str(GRADER), e["_item"], str(folder), work], capture_output=True, text=True, timeout=900)
+    if p.returncode != 0 or not p.stdout.strip():
+        return {"grader_ran": False}
+    return flatten_exam(json.loads(p.stdout.strip().splitlines()[-1]))
+
+
+def flatten_exam(r: dict) -> dict:
+    if r.get("missing"):
+        return {"wrote_the_page": False}
+    out = {}
+    if "layer1" in r:
+        out.update({"l1_" + k: v for k, v in r["layer1"]["checks"].items()})
+    out.update({"brief_" + k: v for k, v in (r.get("brief") or {}).items()})
+    out.update({"data_" + k: v["holds"] for k, v in (r.get("fixtures") or {}).items()})
+    out.update({"motion_" + k: v["holds"] for k, v in (r.get("motion") or {}).items()})
+    out.update({"works_" + k: v["holds"] for k, v in (r.get("behaviour") or {}).items()})
+    if "review" in r:
+        rv = r["review"]
+        out["wrote_report"] = rv["wrote_report"]
+        out.update({"found_" + k: v for k, v in rv["found"].items()})
+        out.update({"left_alone_" + k: not v for k, v in rv["decoys_flagged"].items()})
+        out["sources_untouched"] = rv["sources_untouched"]
+    if "reference" in r:
+        out["matches_reference"] = r["reference"]["holds"]
+    return out
+
+
+KINDS["exam"] = exam
+
+
+def _exam_about(e: dict) -> dict:
+    """Plain words for an exam item's checks, from its item.json and fixed labels."""
+    spec = json.loads((Path(e["_item"]) / "_bench" / "item.json").read_text(encoding="utf-8"))
+    L1 = {"no_side_scroll_320": ("no sideways scrolling on a 320 px phone", "320 像素寬的手機不會左右捲動"),
+          "no_overlapping_text": ("no text drawn over other text", "文字沒有互相重疊"),
+          "no_clipped_text": ("no text cut off", "文字沒有被截掉"),
+          "no_serious_a11y": ("no serious accessibility faults (axe-core)", "沒有嚴重的無障礙問題（axe-core）"),
+          "focus_visible": ("keyboard focus visible on every control", "每個控制項的鍵盤焦點都看得到"),
+          "still_under_reduced_motion": ("nothing keeps moving under reduced motion", "開啟減少動態時沒有持續的動畫"),
+          "offline": ("needs no network", "不需要網路"), "no_script_errors": ("no script errors", "沒有程式錯誤")}
+    out = {"grader_ran": _r("the page could be graded", "頁面可以評分"), "wrote_the_page": _r("wrote the page", "寫出頁面"),
+           "wrote_report": _r("wrote the review", "寫出審查"), "sources_untouched": _r("left the source files alone", "沒有改動原始檔"),
+           "matches_reference": _r("matches the reference screenshot", "和參考截圖一致"),
+           "brief_no_placeholder_text": _r("no placeholder or broken text (lorem, undefined, NaN)", "沒有假文字或壞掉的文字")}
+    out.update({"l1_" + k: _r(*v) for k, v in L1.items()})
+    for m in spec.get("must") or []:
+        out["brief_" + m["id"]] = _r(m.get("en", m["id"]), m.get("zh", m["id"]))
+    for f in spec.get("fixtures") or []:
+        out["data_" + f["id"]] = _r(f"still works with hidden data: {f['id']}", f"換成隱藏資料（{f['id']}）仍正常")
+    for i in spec.get("interactions") or []:
+        want = ("moves well: short, eased out, transform/opacity, reduced-motion safe", "動得好：短、ease-out、只動 transform/opacity、尊重減少動態") \
+            if i["expect"] == "animate" else ("stays still (used too often to animate)", "保持不動（太常用，不該有動畫）")
+        out["motion_" + i["id"]] = _r(f"{i['id']}: {want[0]}", f"{i['id']}：{want[1]}")
+    for b in spec.get("behaviour") or []:
+        out["works_" + b["id"]] = _r(f"still works: {b['id']}", f"功能仍正常：{b['id']}")
+    for f in spec.get("findings") or []:
+        out["found_" + f["id"]] = _r(f"finds the planted fault at {f['file']}:{f['line']}", f"找到埋在 {f['file']}:{f['line']} 的問題")
+    for f in spec.get("decoys") or []:
+        out["left_alone_" + f["id"]] = _r(f"leaves alone {f['file']}:{f['line']}, which is fine", f"沒有誤報 {f['file']}:{f['line']}（那裡沒問題）")
+    return out
+
+
 def _r(en, zh):
     return {"kind": "result", "en": en, "zh": zh}
 
@@ -225,6 +296,8 @@ ABOUT = {
 def about(expect: dict) -> dict:
     """{check name: {kind, en, zh, quote?, flag?}} for the checks of this case's kind."""
     kind = expect.get("check")
+    if kind == "exam":
+        return {**COMMON, **_exam_about(expect)}
     own = getattr(_module(expect["_script"]), "ABOUT", {}) if kind == "script" else ABOUT.get(kind, {})
     return {**COMMON, **own}
 
