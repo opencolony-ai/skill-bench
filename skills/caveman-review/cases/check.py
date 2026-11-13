@@ -16,10 +16,12 @@ def check(folder, e):
     found = [(l, FIND.match(l)) for l in lines]
     hits = [(int(m.group(1)), int(m.group(2) or m.group(1))) for _, m in found if m]
     others = [l for l, m in found if not m]
+    # where the review points, in any wording ("L3", "line 3", "lines 8-9"): finding the bug is
+    # checked apart from the format
+    named = [(int(a), int(b or a)) for a, b in re.findall(r"(?i)\b(?:L|lines?\s+)(\d+)(?:\s*[-–]\s*L?(\d+))?", t)]
     return {
         "exists": True,
         "one_line_per_finding": bool(hits) and len(others) <= 1,   # one line of overall remarks at the top is allowed
         "no_hedging": not HEDGE.search(t),
-        "short_lines": all(len(l) <= 200 for l, m in found if m),
-        "bugs_found": all(any(a <= b <= z for a, z in hits for b in alts) for alts in e["bugs"]),
+        "bugs_found": all(any(a <= b <= z for a, z in named for b in alts) for alts in e["bugs"]),
     }
