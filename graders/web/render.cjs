@@ -36,15 +36,19 @@ async function measure(page, width) {
       const hides = /hidden|clip/.test(s.overflowX + s.overflowY);
       return hides && (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2) && s.textOverflow !== "ellipsis";
     }).length;
-    // two pieces of text drawn on top of each other
+    // two pieces of text drawn on top of each other: compared line box by line box, because an inline
+    // element that wraps has one bounding box spanning both lines
     let overlaps = 0;
-    const boxes = texts.map((el) => [el, el.getBoundingClientRect()]);
-    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
-      const [a, ra] = boxes[i], [b, rb] = boxes[j];
-      if (a.contains(b) || b.contains(a)) continue;
+    const boxes = texts.map((el) => [el, [...el.getClientRects()].filter((r) => r.width > 1 && r.height > 1)]);
+    const hit = (ra, rb) => {
       const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
       const h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
-      if (w > 4 && h > 4 && w * h > 0.2 * Math.min(ra.width * ra.height, rb.width * rb.height)) overlaps++;
+      return w > 4 && h > 4 && w * h > 0.2 * Math.min(ra.width * ra.height, rb.width * rb.height);
+    };
+    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+      const [a, ras] = boxes[i], [b, rbs] = boxes[j];
+      if (a.contains(b) || b.contains(a)) continue;
+      if (ras.some((ra) => rbs.some((rb) => hit(ra, rb)))) overlaps++;
     }
     // controls too small to hit with a finger (WCAG 2.2 target size: 24 × 24 CSS px)
     const controls = all.filter((el) => el.matches("a[href],button,input:not([type=hidden]),select,textarea,[role=button],[tabindex]:not([tabindex='-1'])"));
@@ -132,7 +136,12 @@ async function main() {
       await page.goto(url, { waitUntil: "load", timeout: 30000 });
       await page.waitForTimeout(1200);              // let entrance animations settle
       const m = await measure(page, width);
+      const errorsSoFar = [result.consoleErrors.length, result.pageErrors.length];
       m.axe = await axe(page);
+      if (width === 1280) {     // axe-core's own requests are not the page's errors
+        result.consoleErrors.length = errorsSoFar[0];
+        result.pageErrors.length = errorsSoFar[1];
+      }
       await page.screenshot({ path: path.join(out, `full-${width}.png`), fullPage: true });
       if (width === 1280) {
         await page.screenshot({ path: path.join(out, "first-screen-1280.png") });
@@ -172,4 +181,5 @@ function summary(r) {
   };
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { measure, axe, focusVisible, summary, WIDTHS };
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });

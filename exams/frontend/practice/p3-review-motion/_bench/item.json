@@ -1,0 +1,51 @@
+{
+ "type": "review",
+ "report": "review.md",
+ "readonly": [
+  "app.css"
+ ],
+ "findings": [
+  {
+   "id": "all",
+   "file": "app.css",
+   "line": 5
+  },
+  {
+   "id": "easein",
+   "file": "app.css",
+   "line": 12
+  },
+  {
+   "id": "scale0",
+   "file": "app.css",
+   "line": 17
+  },
+  {
+   "id": "slow",
+   "file": "app.css",
+   "line": 24
+  },
+  {
+   "id": "palette",
+   "file": "app.css",
+   "line": 28
+  }
+ ],
+ "decoys": [
+  {
+   "id": "decoy-origin",
+   "file": "app.css",
+   "line": 32
+  },
+  {
+   "id": "decoy-drawer",
+   "file": "app.css",
+   "line": 35
+  },
+  {
+   "id": "decoy-tooltip",
+   "file": "app.css",
+   "line": 37
+  }
+ ]
+}

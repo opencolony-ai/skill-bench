@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My loans — Fernhill Reading Room</title>
+<style>
+body { margin: 0; font: 18px/1.55 Georgia, serif; color: #1d1d1b; background: #fbfaf7; }
+main { max-width: 40rem; margin: 0 auto; padding: 20px 16px 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.count { color: #44423d; margin: 0 0 16px; }
+ul { list-style: none; padding: 0; margin: 0; }
+li { padding: 14px 0; border-top: 1px solid #dcd9d1; overflow-wrap: anywhere; }
+.title { font-weight: 700; display: block; }
+.meta { color: #44423d; }
+.overdue { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 4px; background: #8c1d18; color: #fff; font-size: 0.9rem; }
+.error { padding: 12px; border: 2px solid #8c1d18; border-radius: 6px; }
+</style></head>
+<body><main><h1>My loans</h1><div id="out"></div></main>
+<script src="data.js"></script>
+<script>
+const TODAY = "2026-11-20";
+const out = document.getElementById("out");
+const fmt = (d) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+if (window.LOANS_ERROR) {
+  out.append(el("p", "error", "We couldn't load your loans. Please try again later."));
+} else {
+  const loans = (window.LOANS || []).slice().sort((a, b) => String(a.due).localeCompare(String(b.due)));
+  if (!loans.length) out.append(el("p", "count", "You have no books on loan."));
+  else {
+    out.append(el("p", "count", loans.length === 1 ? "1 book on loan" : loans.length + " books on loan"));
+    const ul = el("ul");
+    for (const l of loans) {
+      const li = el("li");
+      li.append(el("span", "title", l.title || "Untitled"));
+      const meta = el("span", "meta", (l.author ? l.author + " · " : "") + "Due " + (l.due ? fmt(l.due) : "date unknown"));
+      li.append(meta);
+      if (l.due && l.due < TODAY) li.append(el("span", "overdue", "Overdue"));
+      ul.append(li);
+    }
+    out.append(ul);
+  }
+}
+</script></body></html>

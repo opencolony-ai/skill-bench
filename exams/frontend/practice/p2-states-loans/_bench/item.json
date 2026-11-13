@@ -1,0 +1,81 @@
+{
+ "type": "states",
+ "page": "index.html",
+ "must": [
+  {
+   "id": "count",
+   "en": "says how many",
+   "zh": "寫出借了幾本",
+   "text_any": [
+    "5 books on loan"
+   ]
+  },
+  {
+   "id": "overdue",
+   "en": "marks the overdue loan",
+   "zh": "標出逾期",
+   "text_any": [
+    "Overdue"
+   ]
+  },
+  {
+   "id": "titles",
+   "en": "shows every title",
+   "zh": "每本書名都有",
+   "text_all": [
+    "The Left Hand of Darkness",
+    "Braiding Sweetgrass",
+    "小王子",
+    "The Mushroom at the End of the World",
+    "Piranesi"
+   ]
+  }
+ ],
+ "fixtures": [
+  {
+   "id": "empty",
+   "file": "data.js",
+   "src": "fixtures/empty.js",
+   "expect_text_any": [
+    "You have no books on loan."
+   ]
+  },
+  {
+   "id": "one",
+   "file": "data.js",
+   "src": "fixtures/one.js",
+   "expect_text_any": [
+    "1 book on loan"
+   ],
+   "no_text_any": [
+    "1 books"
+   ]
+  },
+  {
+   "id": "many",
+   "file": "data.js",
+   "src": "fixtures/many.js",
+   "expect_text_any": [
+    "300 books on loan"
+   ],
+   "max_ms": 3000
+  },
+  {
+   "id": "long",
+   "file": "data.js",
+   "src": "fixtures/long.js",
+   "expect_text_any": [
+    "Supercalifragilistic"
+   ]
+  },
+  {
+   "id": "error",
+   "file": "data.js",
+   "src": "fixtures/error.js",
+   "expect_text_any": [
+    "couldn't load your loans",
+    "could not load your loans"
+   ]
+  }
+ ]
+}
