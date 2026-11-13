@@ -1,4 +1,4 @@
-"""The report: one card per skill (results, following the skill, cost, time), and for every case
+"""The report: one card per skill (results, following the skill, tokens, time), and for every case
 what Claude wrote without and with the skill, side by side, with each check in plain words.
 
 Built from results/ by `python bench.py site`. Standard library only; every piece of text from a
@@ -20,8 +20,8 @@ T = {
         "kind_result": "Results: what the task itself asked for. Claude without the skill has a fair chance at these.",
         "kind_rule": "Follows the skill: rules the skill states, each quoting its sentence. Without the skill Claude was never "
                      "told them, so this shows the skill was read and obeyed, not that the work got better.",
-        "verdict_rule": "The one-line verdict follows fixed rules: results first, then format, then cost.",
-        "results": "Results", "rules": "Follows the skill", "cost": "Cost", "time": "Time", "out": "Output tokens",
+        "verdict_rule": "The one-line verdict follows fixed rules: results first, then format, then tokens used.",
+        "results": "Results", "rules": "Follows the skill", "cost": "Tokens", "time": "Time", "out": "Output tokens",
         "used": "Claude opened the skill", "verifiers": "Verifiers", "without": "Without the skill", "with": "With the skill",
         "runs": "runs", "source": "source", "by": "by", "cases": "What Claude wrote, case by case", "task": "The task",
         "result_k": "result", "rule_k": "rule", "skill_says": "the skill says", "nothing": "(no file written)",
@@ -36,7 +36,7 @@ T = {
         "kind_rule": "照技能做：技能自己規定的規則，每一條都引用技能的原句。沒裝技能的 Claude 根本不知道這些規則，"
                      "所以這只代表技能有被讀、被遵守，不代表做得更好。",
         "verdict_rule": "一句話結論照固定規則產生：先看結果，再看格式，最後看費用。",
-        "results": "結果", "rules": "照技能做", "cost": "費用", "time": "時間", "out": "輸出 token",
+        "results": "結果", "rules": "照技能做", "cost": "token 用量", "time": "時間", "out": "輸出 token",
         "used": "Claude 有打開技能", "verifiers": "驗證人數", "without": "沒裝技能", "with": "裝了技能",
         "runs": "次", "source": "來源", "by": "作者", "cases": "Claude 寫了什麼（逐題）", "task": "題目",
         "result_k": "結果", "rule_k": "規則", "skill_says": "技能原句", "nothing": "（沒有寫出檔案）",
@@ -130,7 +130,7 @@ def _card(name: str, w: dict, lang: str) -> str:
     frac = lambda x: f"{x:g}/{n}"
     rows = [(w["results"], bench._arrow(s, "result", frac)),
             (w["rules"], bench._arrow(s, "rule", frac) if s.get("rule_none") is not None else w["nores"]),
-            (w["cost"], bench._arrow(s, "cost", lambda x: f"${x:.2f}") + (f" ({s['cost_change']:+d}%)" if s.get("cost_change") is not None else "")),
+            (w["cost"], bench._arrow(s, "tokens", bench.ktok) + (f" ({s['token_change']:+d}%)" if s.get("token_change") is not None else "")),
             (w["time"], bench._arrow(s, "seconds", lambda x: f"{x:.0f} s")),
             (w["out"], bench._arrow(s, "output_tokens", lambda x: f"{x:,.0f}")),
             (w["used"], f"{s['used']}/{s['verifiers']} {w['runs']}"),
@@ -174,10 +174,10 @@ def page(lang: str) -> str:
 
 POINTS = {"verification": 1, "pioneer": 1, "agreement": 2}
 POINTS_RULE = {
-    "en": ["+1 for every verification CI accepted (it cost you real money).",
+    "en": ["+1 for every verification CI accepted (it used your Claude allowance).",
            "+1 for being one of the first three verifiers of a skill version.",
            "+2 when three or more people have verified that version and your run agrees with the median within one case."],
-    "zh": ["每一次被 CI 接受的驗證 +1（你真的花了錢）。",
+    "zh": ["每一次被 CI 接受的驗證 +1（你用了自己的 Claude 額度）。",
            "是某技能某版本的前三位驗證者，開路 +1。",
            "那個版本有三人以上驗證，而且你的結果和中位數差不到一題，一致 +2。"],
 }
@@ -219,7 +219,7 @@ def points() -> dict:
         for i, r in enumerate(order):
             u = str(r["user"]).lower()
             w = out.setdefault(u, {"user": r["user"], "verifications": 0, "points": 0, "agreed": 0, "pending": 0,
-                                   "skills": [], "last": "", "spent_usd": 0.0})
+                                   "skills": [], "last": "", "tokens": 0})
             w["verifications"] += 1
             w["points"] += POINTS["verification"] + (POINTS["pioneer"] if i < bench.NEED else 0)
             agrees = abs(a[i] - ma) <= bench.TOLERANCE and abs(b[i] - mb) <= bench.TOLERANCE
@@ -231,7 +231,7 @@ def points() -> dict:
             if name not in w["skills"]:
                 w["skills"].append(name)
             w["last"] = max(w["last"], str(r.get("finished", "")))
-            w["spent_usd"] += sum((r["arms"][arm].get("usage") or {}).get("cost_usd") or 0 for arm in bench.ARMS)
+            w["tokens"] += sum((r["arms"][arm].get("usage") or {}).get("total_tokens") or 0 for arm in bench.ARMS)
     return out
 
 
@@ -252,17 +252,17 @@ def colony_data() -> dict:
                 with_results += 1
                 consensus += s["status"] in ("consistent", "no signal")
                 item.update(verdict=s["verdict"], verdict_text={l: bench.verdict_text(s, l) for l in ("en", "zh")},
-                            used=s["used"], cost_change=s.get("cost_change"),
-                            **{k: [s.get(f"{k}_none"), s.get(f"{k}_skill")] for k in ("result", "rule", "cost", "seconds")})
+                            used=s["used"], token_change=s.get("token_change"),
+                            **{k: [s.get(f"{k}_none"), s.get(f"{k}_skill")] for k in ("result", "rule", "tokens", "seconds")})
             items.append(item)
         cs.append({**c, "skills": items})
     for r in bench.load_results():
         runs += 1
-    spent = sum(w["spent_usd"] for w in workers)
+    tokens = sum(w["tokens"] for w in workers)
     return {"schema": 1, "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "need": bench.NEED, "points_rule": POINTS_RULE,
             "totals": {"skills": skills_total, "with_results": with_results, "consensus": consensus,
-                       "workers": len(workers), "verifications": runs, "spent_usd": round(spent, 2), "active_claims": 0},
+                       "workers": len(workers), "verifications": runs, "tokens": tokens, "active_claims": 0},
             "colonies": cs, "workers": workers}
 
 

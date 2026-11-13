@@ -127,7 +127,7 @@ def _abouts(name: str) -> dict:
 
 def split(r: dict, arm: str, abouts: dict) -> dict:
     """One arm of one result, told apart: cases whose result checks all pass, cases whose rule checks
-    all pass (None when the cases check no rule), and what the arm cost."""
+    all pass (None when the cases check no rule), and what the arm used."""
     a = (r.get("arms") or {}).get(arm) or {}
     res = rule = 0
     has_rule = False
@@ -139,7 +139,7 @@ def split(r: dict, arm: str, abouts: dict) -> dict:
         has_rule |= bool(rules)
         rule += all(rules)
     u = a.get("usage") or {}
-    return {"result": res, "rule": rule if has_rule else None, "cost": u.get("cost_usd"),
+    return {"result": res, "rule": rule if has_rule else None, "cost": u.get("cost_usd"), "tokens": u.get("total_tokens"),
             "seconds": (u.get("duration_ms") or 0) / 1000 or None, "output_tokens": u.get("output_tokens")}
 
 
@@ -149,11 +149,12 @@ def _median(xs):
 
 
 def verdict(s: dict) -> tuple[str, float | None]:
-    """The one-line reading of a standing, by fixed rules: results first, then format, then cost.
-    Returns (better | worse | format | none, cost change in percent)."""
+    """The one-line reading of a standing, by fixed rules: results first, then format, then tokens.
+    Returns (better | worse | format | none, change in tokens used, in percent). Tokens, not money:
+    verifiers run on their own Claude subscription, where a run costs allowance, not dollars."""
     pct = None
-    if s.get("cost_none") and s.get("cost_skill") is not None:
-        pct = round((s["cost_skill"] - s["cost_none"]) / s["cost_none"] * 100)
+    if s.get("tokens_none") and s.get("tokens_skill") is not None:
+        pct = round((s["tokens_skill"] - s["tokens_none"]) / s["tokens_none"] * 100)
     if s["result_skill"] > s["result_none"]:
         return "better", pct
     if s["result_skill"] < s["result_none"]:
@@ -189,9 +190,9 @@ def standing(name: str) -> dict:
     ab = _abouts(name)
     for arm in ARMS:
         parts = [split(r, arm, ab) for r in runs]
-        for k in ("result", "rule", "cost", "seconds", "output_tokens"):
+        for k in ("result", "rule", "cost", "tokens", "seconds", "output_tokens"):
             out[f"{k}_{arm}"] = _median([p[k] for p in parts])
-    out["verdict"], out["cost_change"] = verdict(out)
+    out["verdict"], out["token_change"] = verdict(out)
     used = [r.get("arms", {}).get("skill", {}).get("skill_used") for r in runs]
     out["used"] = sum(1 for u in used if u is True)  # runs in which Claude opened the skill at all
     agree = all(abs(x - ma) <= TOLERANCE for x in a) and all(abs(x - mb) <= TOLERANCE for x in b)
@@ -504,15 +505,20 @@ STATUS_WORDS = {"consistent": "✅ consistent", "disputed": "⚠️ disputed", "
 
 VERDICT_WORDS = {
     "en": {"better": "Better results", "worse": "Worse results", "format": "Same results, follows the skill's format",
-           "none": "No effect", "more": "costs {p}% more", "less": "costs {p}% less", "same": "about the same cost"},
+           "none": "No effect", "more": "uses {p}% more tokens", "less": "uses {p}% fewer tokens", "same": "about the same tokens"},
     "zh": {"better": "結果變好", "worse": "結果變差", "format": "結果一樣，只改了格式", "none": "沒有效果",
-           "more": "多花 {p}%", "less": "省下 {p}%", "same": "費用差不多"},
+           "more": "多用 {p}% token", "less": "少用 {p}% token", "same": "token 用量差不多"},
 }
+
+
+def ktok(x: float) -> str:
+    """Tokens for people: 141k, 1.2M."""
+    return f"{x / 1e6:.1f}M" if x >= 1e6 else f"{x / 1e3:.0f}k"
 
 
 def verdict_text(s: dict, lang: str = "en") -> str:
     w = VERDICT_WORDS[lang]
-    p = s.get("cost_change")
+    p = s.get("token_change")
     cost = "" if p is None else (w["same"] if abs(p) < 5 else (w["more"] if p > 0 else w["less"]).format(p=abs(p)))
     return w[s["verdict"]] + ((", " if lang == "en" else "，") + cost if cost else "")
 
@@ -534,10 +540,11 @@ def cmd_board(a) -> None:
            "- **Follows the skill**: cases where Claude kept every rule the skill states (each rule quotes the skill). "
            "Without the skill Claude was never told these rules, so this shows the skill was read and obeyed, not that "
            "the work got better.",
-           "- **Cost** and **time** are for the whole set of cases, median over verifiers, at API prices.",
+           "- **Tokens** and **time** are for the whole set of cases, median over verifiers. Verifiers run on their own "
+           "Claude subscription, so a run costs allowance, not money; tokens include Claude Code's own prompt read from cache.",
            f"- A result counts when at least {NEED} people other than the author agree within {TOLERANCE} case. "
            "**The model is reported by each verifier and not checked.**", "",
-           "| Skill | Verdict | Results | Follows the skill | Cost | Time | Claude used it | Verifiers |",
+           "| Skill | Verdict | Results | Follows the skill | Tokens | Time | Claude used it | Verifiers |",
            "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     for s in rows:
         n = s["cases"]
@@ -546,7 +553,7 @@ def cmd_board(a) -> None:
             out.append(f"| {link} | not yet run | - | - | - | - | - | 0/{NEED} |")
             continue
         out.append(f"| {link} | {verdict_text(s)} | {_arrow(s, 'result', lambda x: f'{x:g}/{n}')} | "
-                   f"{_arrow(s, 'rule', lambda x: f'{x:g}/{n}')} | {_arrow(s, 'cost', lambda x: f'${x:.2f}')} | "
+                   f"{_arrow(s, 'rule', lambda x: f'{x:g}/{n}')} | {_arrow(s, 'tokens', ktok)} | "
                    f"{_arrow(s, 'seconds', lambda x: f'{x:.0f} s')} | {s['used']}/{s['verifiers']} runs | "
                    f"{s['verifiers']}/{NEED} {STATUS_WORDS[s['status']]} |")
     out += ["", "Status: ✅ consistent (enough verifiers, and they agree) · ⚠️ disputed (they disagree; more are asked) · "

@@ -189,14 +189,14 @@ class Bench(unittest.TestCase):
                                 f"{name}: an imported skill needs at least one result check")
 
     def test_the_verdict_reads_results_first_then_format_then_cost(self):
-        base = {"result_none": 2, "result_skill": 2, "rule_none": 0, "rule_skill": 3, "cost_none": 0.10, "cost_skill": 0.15}
+        base = {"result_none": 2, "result_skill": 2, "rule_none": 0, "rule_skill": 3, "tokens_none": 100_000, "tokens_skill": 150_000}
         self.assertEqual(bench.verdict(base), ("format", 50))
         self.assertEqual(bench.verdict({**base, "result_skill": 3})[0], "better")
         self.assertEqual(bench.verdict({**base, "result_skill": 1})[0], "worse")
         self.assertEqual(bench.verdict({**base, "rule_skill": 0})[0], "none")
-        s = {**base, "verdict": "format", "cost_change": 50}
-        self.assertEqual(bench.verdict_text(s, "zh"), "結果一樣，只改了格式，多花 50%")
-        self.assertEqual(bench.verdict_text({**s, "cost_change": -3}), "Same results, follows the skill's format, about the same cost")
+        s = {**base, "verdict": "format", "token_change": 50}
+        self.assertEqual(bench.verdict_text(s, "zh"), "結果一樣，只改了格式，多用 50% token")
+        self.assertEqual(bench.verdict_text({**s, "token_change": -3}), "Same results, follows the skill's format, about the same tokens")
 
     def test_results_and_rules_are_counted_apart(self):
         r = fake_result("ann", 0, 3)
@@ -336,7 +336,7 @@ class Bench(unittest.TestCase):
             text = (self.tmp / "LEADERBOARD.md").read_text()
         finally:
             bench.ROOT = old
-        self.assertIn(f"| [{SKILL}](skills/{SKILL}/SKILL.md) | Same results, follows the skill's format | 3/3 → 3/3 | 0/3 → 3/3 | - | - | 3/3 runs | 3/3 ✅ consistent |", text)
+        self.assertIn(f"| [{SKILL}](skills/{SKILL}/SKILL.md) | Same results, follows the skill's format, about the same tokens | 3/3 → 3/3 | 0/3 → 3/3 | 1k → 1k | - | 3/3 runs | 3/3 ✅ consistent |", text)
         for n in bench.skill_names():
             self.assertIn(f"[{n}]", text)
 

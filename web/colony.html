@@ -132,17 +132,17 @@ const T = {
   zh: {
     title: "技能蟻窩", lede: "大家常裝的 agent 技能，真的讓 Claude 做得更好嗎？每個技能由互不相識的人用自己的 Claude Code 各跑一次「沒裝」和「裝了」，程式評分，三人結果一致才算數。",
     lang: "English", themeL: "淺色", themeD: "深色",
-    tiles: { with_results: "有結果的技能", consensus: "已有共識", workers: "參與的工蟻", verifications: "完成的驗證", spent_usd: "大家貢獻的額度" },
+    tiles: { with_results: "有結果的技能", consensus: "已有共識", workers: "參與的工蟻", verifications: "完成的驗證", tokens: "大家貢獻的 token" },
     of: "／", legendFill: "蟻室填滿 = 驗證人數（滿 3 人有共識）",
     verdict: { better: "結果變好", format: "只改了格式", none: "沒有效果", worse: "結果變差", unrun: "還沒人驗" },
     skills: "個技能", verifiedBy: "人驗證", tableView: "以表格查看",
-    th: { skill: "技能", verdict: "結論", results: "結果（沒裝→裝了）", cost: "費用", who: "驗證" },
-    workers: "工蟻榜", wth: { user: "工蟻", points: "點數", n: "驗證", agreed: "一致", pending: "待共識", spent: "貢獻額度" },
+    th: { skill: "技能", verdict: "結論", results: "結果（沒裝→裝了）", cost: "token 用量", who: "驗證" },
+    workers: "工蟻榜", wth: { user: "工蟻", points: "點數", n: "驗證", agreed: "一致", pending: "待共識", spent: "貢獻 token" },
     rule: "點數怎麼算", noWorkers: "還沒有人驗證。",
-    join: "加入挖礦", joinLede: "用你自己的 Claude Code 驗證一個技能，約 1–2 分鐘、US$0.1–0.4。",
+    join: "加入挖礦", joinLede: "用你自己的 Claude Code 驗證一個技能，約 1–2 分鐘，用的是你訂閱方案裡的額度，不另外花錢。",
     steps: ["Fork 並 clone github.com/opencolony-ai/skill-bench", "python bench.py next --user <你的 GitHub 帳號>", "python bench.py run <它挑的技能>", "python bench.py submit <資料夾> --user <你的 GitHub 帳號>，再開 PR"],
     soon: "製作中：Claude Code 外掛，一句「幫 OpenColony 挖一個」就能完成以上全部，以及用 GitHub Issues 認領（48 小時）。",
-    panel: { results: "結果", rules: "照技能做", cost: "費用", time: "時間", used: "Claude 打開技能", verifiers: "驗證者", author: "作者", source: "來源", report: "看並排對照", verify: "驗證這個技能", close: "關閉", none: "還沒人驗證這個技能。", noRules: "沒有規則檢查", runs: "次" },
+    panel: { results: "結果", rules: "照技能做", cost: "token 用量", time: "時間", used: "Claude 打開技能", verifiers: "驗證者", author: "作者", source: "來源", report: "看並排對照", verify: "驗證這個技能", close: "關閉", none: "還沒人驗證這個技能。", noRules: "沒有規則檢查", runs: "次" },
     foot: "資料：{t} 產生。所有數字都由 skill-bench repo 裡的結果檔算出，任何人都能重算。",
     json: "原始資料 colony.json", repo: "GitHub repo", reportLink: "完整報告",
     err: "讀不到資料：",
@@ -150,17 +150,17 @@ const T = {
   en: {
     title: "Skill colonies", lede: "Do the agent skills people install actually make Claude better? Each skill is run without and with it by people who don't know each other, on their own Claude Code, graded by a program; it counts when three agree.",
     lang: "中文", themeL: "Light", themeD: "Dark",
-    tiles: { with_results: "skills with results", consensus: "with consensus", workers: "workers", verifications: "verifications", spent_usd: "compute contributed" },
+    tiles: { with_results: "skills with results", consensus: "with consensus", workers: "workers", verifications: "verifications", tokens: "tokens contributed" },
     of: "/", legendFill: "chamber fill = verifiers (3 for consensus)",
     verdict: { better: "Better results", format: "Format only", none: "No effect", worse: "Worse results", unrun: "Not run yet" },
     skills: "skills", verifiedBy: "verified", tableView: "Show as a table",
-    th: { skill: "Skill", verdict: "Verdict", results: "Results (without→with)", cost: "Cost", who: "Verified" },
-    workers: "Workers", wth: { user: "Worker", points: "Points", n: "Runs", agreed: "Agreed", pending: "Pending", spent: "Spent" },
+    th: { skill: "Skill", verdict: "Verdict", results: "Results (without→with)", cost: "Tokens", who: "Verified" },
+    workers: "Workers", wth: { user: "Worker", points: "Points", n: "Runs", agreed: "Agreed", pending: "Pending", spent: "Tokens" },
     rule: "How points work", noWorkers: "Nobody has verified a skill yet.",
-    join: "Join the mining", joinLede: "Verify one skill on your own Claude Code: about 1–2 minutes, US$0.1–0.4.",
+    join: "Join the mining", joinLede: "Verify one skill on your own Claude Code: about 1–2 minutes, on your subscription's allowance, at no extra cost.",
     steps: ["Fork and clone github.com/opencolony-ai/skill-bench", "python bench.py next --user <your GitHub name>", "python bench.py run <the skill it picked>", "python bench.py submit <folder> --user <your GitHub name>, then open a pull request"],
     soon: "Coming: a Claude Code plugin that does all of the above from one sentence (\"mine one for OpenColony\"), and claiming through GitHub Issues (48 hours).",
-    panel: { results: "Results", rules: "Follows the skill", cost: "Cost", time: "Time", used: "Claude opened the skill", verifiers: "Verifiers", author: "Author", source: "source", report: "See side by side", verify: "Verify this skill", close: "Close", none: "Nobody has verified this skill yet.", noRules: "no rule checks", runs: "runs" },
+    panel: { results: "Results", rules: "Follows the skill", cost: "Tokens", time: "Time", used: "Claude opened the skill", verifiers: "Verifiers", author: "Author", source: "source", report: "See side by side", verify: "Verify this skill", close: "Close", none: "Nobody has verified this skill yet.", noRules: "no rule checks", runs: "runs" },
     foot: "Data generated {t}. Every number is computed from the result files in the skill-bench repository; anyone can recompute it.",
     json: "Raw data colony.json", repo: "GitHub repository", reportLink: "Full report",
     err: "Could not load the data: ",
@@ -197,7 +197,7 @@ function sv(tag, attrs, ...kids) {
   for (const k of kids) if (k) e.append(k);
   return e;
 }
-const money = (x) => x == null ? "–" : "$" + x.toFixed(2);
+const tok = (x) => x == null ? "–" : x >= 1e6 ? (x / 1e6).toFixed(1) + "M" : Math.round(x / 1e3) + "k";
 const pair = (a, f) => !a || a[0] == null ? "–" : `${f(a[0])} → ${f(a[1])}`;
 const vkey = (s) => s.verdict || "unrun";
 
@@ -233,7 +233,7 @@ function renderTiles() {
   const tiles = [
     ["with_results", el("span", {}, String(x.with_results), el("small", { text: ` ${t().of} ${x.skills}` }))],
     ["consensus", String(x.consensus)], ["workers", String(x.workers)], ["verifications", String(x.verifications)],
-    ["spent_usd", money(x.spent_usd)],
+    ["tokens", tok(x.tokens)],
   ];
   $("#tiles").replaceChildren(...tiles.map(([key, v]) => el("div", { class: "tile" },
     el("div", { class: "v" }, typeof v === "string" ? document.createTextNode(v) : v), el("div", { class: "k", text: k[key] }))));
@@ -315,7 +315,7 @@ function nestTable(colony) {
     el("td", { text: s.name }),
     el("td", { text: `${VERDICT[vkey(s)].icon} ${s.verdict_text ? s.verdict_text[LANG] : t().verdict.unrun}` }),
     el("td", { class: "num", text: pair(s.result, (v) => `${v}/${s.cases}`) }),
-    el("td", { class: "num", text: pair(s.cost, money) }),
+    el("td", { class: "num", text: pair(s.tokens, tok) }),
     el("td", { class: "num", text: `${s.verifiers}/${s.need}` })));
   return el("div", { class: "wrap" }, el("table", {},
     el("thead", {}, el("tr", {}, el("th", { text: h.skill }), el("th", { text: h.verdict }), el("th", { class: "num", text: h.results }),
@@ -350,7 +350,7 @@ function renderWorkers() {
         el("td", {}, el("a", { href: "https://github.com/" + encodeURIComponent(x.user), rel: "noopener", text: x.user })),
         el("td", { class: "num", text: String(x.points) }), el("td", { class: "num", text: String(x.verifications) }),
         el("td", { class: "num", text: String(x.agreed) }), el("td", { class: "num", text: String(x.pending) }),
-        el("td", { class: "num", text: money(x.spent_usd) })))));
+        el("td", { class: "num", text: tok(x.tokens) })))));
   }
   $("#rule").replaceChildren(...(D.points_rule[LANG] || []).map((r) => el("li", { text: r })));
 }
@@ -360,7 +360,7 @@ function showPanel(s) {
   const rows = s.verdict ? [
     [p.results, pair(s.result, (v) => `${v}/${s.cases}`)],
     [p.rules, s.rule && s.rule[0] != null ? pair(s.rule, (v) => `${v}/${s.cases}`) : p.noRules],
-    [p.cost, pair(s.cost, money) + (s.cost_change != null ? ` (${s.cost_change > 0 ? "+" : ""}${s.cost_change}%)` : "")],
+    [p.cost, pair(s.tokens, tok) + (s.token_change != null ? ` (${s.token_change > 0 ? "+" : ""}${s.token_change}%)` : "")],
     [p.time, pair(s.seconds, (v) => `${Math.round(v)} s`)],
     [p.used, `${s.used}/${s.verifiers} ${p.runs}`],
   ] : [];

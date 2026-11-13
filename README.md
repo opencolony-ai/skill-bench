@@ -24,9 +24,9 @@ Every skill gets one card:
 writing-plans                 without the skill → with it
   Results            3/3 → 3/3        did what the task asked
   Follows the skill  0/3 → 3/3        kept the rules the skill states
-  Cost               $0.13 → $0.22 (+69%)
+  Tokens             147k → 203k (+38%)
   Time               50 s → 82 s
-  Verdict: Same results, follows the skill's format, costs 69% more.
+  Verdict: Same results, follows the skill's format, uses 38% more tokens.
 ```
 
 Below it, every case side by side: the page Claude built (in a frame that runs no script) or the text it
@@ -40,7 +40,7 @@ wrote, with what a failed rule points at highlighted, and every check ticked or 
   the quote is not in the skill. A rule the skill does not state cannot be checked.
 
 The verdict follows fixed rules: results first (better / worse), then format ("same results, follows the
-skill's format"), then cost. Following the skill's rules is not counted as doing better: without the skill,
+skill's format"), then tokens used. Following the skill's rules is not counted as doing better: without the skill,
 Claude was never told them.
 
 ## Verify a skill (about 5 minutes)
@@ -69,7 +69,8 @@ Then open a pull request with the one file it wrote under `results/`. CI checks 
 - Each result records which tools Claude called and whether it opened the skill at all. A skill that
   Claude never opens cannot help, and the leaderboard says how often that happened.
 - One verification is two Claude Code runs. Measured on `conventional-commit` (3 cases, Sonnet):
-  about 35 seconds and US$0.29 at API prices; on a subscription it uses your plan's allowance.
+  about 1–2 minutes and a few hundred thousand tokens (mostly Claude Code's own prompt, read from cache) of your
+  subscription's allowance: no extra money.
 - What Claude wrote for each case goes into the result, so anyone can re-grade it. Test cases are public.
 
 ## How results are judged
