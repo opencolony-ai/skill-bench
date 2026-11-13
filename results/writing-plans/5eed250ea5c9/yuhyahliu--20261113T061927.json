@@ -1,0 +1,216 @@
+{
+ "schema": 1,
+ "skill": "writing-plans",
+ "version": "5eed250ea5c9",
+ "author": "obra",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:19:27+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:17:19+00:00",
+   "usage": {
+    "total_tokens": 146887,
+    "input_tokens": 8,
+    "output_tokens": 6269,
+    "cache_write_tokens": 12014,
+    "cache_read_tokens": 128596,
+    "cost_usd": 0.1236216,
+    "turns": 11,
+    "duration_ms": 54480,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32769,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4717,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0217166,
+    "turns": 1,
+    "duration_ms": 5436,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "title": false,
+      "agentic_workers_note": false,
+      "header_fields": false,
+      "global_constraints": false,
+      "review_focus": false,
+      "tasks": false,
+      "files_per_task": false,
+      "interfaces_per_task": false,
+      "checkbox_steps": false,
+      "failing_test_first": false,
+      "spec_values": true
+     },
+     "outputs": {
+      "plan.md": "# Implementation plan: short links\n\n## Decisions and open points\n- **Alphabet:** use the literal string from the spec (55 chars). Note it also omits lowercase `i` and `o`, which the prose (\"no 0, 1, O, I, l\") doesn't mention. The literal string wins; confirm with the spec owner. Add a test pinning the constant.\n- **Randomness:** `secrets.choice` (stdlib) for codes, 7 chars.\n- **Module:** `shortlinks.py` (or the project's existing package location) exposing `shorten`, `resolve`, `ShortenError`.\n- **DB path:** `links.db`, default constant, overridable through an optional parameter or module setting so tests can use a temp file. The spec does not say which directory; assume the process working directory and flag it.\n\n## Storage\nTable `links(code TEXT PRIMARY KEY, url TEXT NOT NULL UNIQUE)`.\n- `PRIMARY KEY` makes collisions detectable atomically (`sqlite3.IntegrityError`) rather than by check-then-insert.\n- `UNIQUE` on `url` enforces \"same URL → same code\", including under concurrent writers.\n- Create the table with `CREATE TABLE IF NOT EXISTS` on each connection open (cheap, no migration tooling needed).\n- Open a short-lived connection per call (`with closing(sqlite3.connect(...))`, `with conn:` for transactions) to stay thread-safe without sharing connections. Set a busy timeout.\n\n## `shorten(url)` algorithm\n1. Look up `url`; if found, return its code.\n2. Up to 3 attempts: generate a code, `INSERT`.\n   - Success → return code.\n   - `IntegrityError`: distinguish which constraint fired. If it was the URL (another writer inserted it first), re-select and return that code (this is not a collision and doesn't consume an attempt). If it was the code, count an attempt and retry.\n3. After 3 code collisions, raise `ShortenError`.\n- Input validation: spec is silent. Minimal: raise `TypeError`/`ValueError` on non-str or empty? Decide and note; don't invent URL parsing/normalisation (`http://a` and `http://a/` are different URLs per spec).\n\n## `resolve(code)`\nSelect by code; return url or `None`. Malformed codes (wrong length/characters) simply return `None` via the lookup — no special handling.\n\n## Tests (pytest or unittest — use whichever the project already uses; stdlib `unittest` if none)\nUse a temp DB per test.\n1. Code is length 7 and every char in the alphabet (loop many times).\n2. Alphabet constant excludes `0 1 O I l`.\n3. `resolve(shorten(u)) == u`.\n4. `resolve(\"unknown\")` is `None`.\n5. Same URL twice → same code, only one row.\n6. Different URLs → different codes.\n7. Persistence: new connection / re-import still resolves.\n8. Collision retry: monkeypatch the code generator to return a colliding code once then a fresh one → succeeds with the fresh code.\n9. Give-up: generator always returns an existing code → `ShortenError` after exactly 3 generation attempts.\n10. Same-URL race path: simulate the URL-unique `IntegrityError` and confirm it returns the existing code rather than failing.\n\n## Order of work\n1. Alphabet constant, code generator, and its tests.\n2. Schema and connection helper.\n3. `resolve`, then `shorten` with the collision loop; tests 3–10.\n4. Verify only stdlib imports and Python 3.11 compatibility; add `links.db` to `.gitignore`.\n\n## Out of scope\nURL validation/normalisation, expiry, deletion, analytics, HTTP endpoints.\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "title": false,
+      "agentic_workers_note": false,
+      "header_fields": false,
+      "global_constraints": false,
+      "review_focus": false,
+      "tasks": false,
+      "files_per_task": false,
+      "interfaces_per_task": false,
+      "checkbox_steps": false,
+      "failing_test_first": false,
+      "spec_values": true
+     },
+     "outputs": {
+      "plan.md": "# Implementation plan: API rate limiting\n\n## Decisions and open points\n- **Algorithm:** sliding-window log: per key, a list of request timestamps within the last 60 s. This matches \"rolling 60 seconds\" exactly; memory is bounded by ≤100 (or 20) timestamps per key.\n- **Key identity:** API key → bucket `key:<value>` (limit 100). No API key → bucket `ip:<req.ip>` (limit 20). Namespacing prevents collisions between a key and an IP string.\n- **Where the key comes from:** the spec doesn't say. Assume the project's existing auth convention (e.g. `X-API-Key` header); find it in the codebase before coding. Whether an *invalid* key counts as \"has a key\" is open: default to treating any presented key as a key bucket, and flag it (an attacker rotating fake keys would otherwise dodge the IP limit; consider this a question for the spec owner).\n- **Client IP:** `req.ip`. If the service sits behind a proxy, `trust proxy` must be configured correctly or all clients share one IP. Check the deployment; do not change it silently.\n- **Blocked requests:** do they count toward the window? Choose not to record rejected requests (so a client backing off recovers on schedule). Note the choice.\n- **Retry-After:** whole seconds, `ceil((oldestTimestamp + 60_000 - now) / 1000)`, minimum 1.\n- **Healthz:** `GET /healthz` bypassed entirely (no counting). Match method and exact path.\n\n## Components (TypeScript, Node 20)\n1. `src/rateLimit/slidingWindow.ts`: pure store: `SlidingWindowLimiter` with `check(bucket, limit, windowMs, now) → { allowed: true } | { allowed: false, retryAfterSec }`. Takes an injectable clock (`now` param) so tests need no real waiting.\n2. Memory hygiene: periodic sweep (`setInterval(...).unref()`) removing buckets with no timestamps in the window; also prune on each check. Expose a way to stop it for tests.\n3. `src/rateLimit/middleware.ts`: Express middleware factory `rateLimit(options)`: skip healthz, pick bucket/limit, call limiter, on deny set `Retry-After` and send 429 (JSON body consistent with existing error format). Options carry the limits/window with the spec values as defaults.\n4. Wire in `app.ts`: register before the routes that need protection (and healthz bypass handled inside the middleware, so order is not fragile).\n\n## Tests (vitest)\nUnit (fake clock):\n- 100 allowed, 101st denied for a key; 20/21 for IP.\n- Window rolls: after timestamps age out, requests are allowed again; partial roll (only the oldest expired) frees exactly the right number of slots.\n- `retryAfterSec` is an integer ≥ 1 and correct at boundaries (e.g. 0.2 s left → 1).\n- Separate keys and separate IPs are independent; key `x` and IP `x` don't share a bucket.\n- Rejected requests aren't recorded.\n- Sweep removes idle buckets.\n\nMiddleware (supertest-style if already in the repo, otherwise call the handler with mock req/res; avoid adding a dependency without asking):\n- 429 status + `Retry-After` header present, whole number.\n- Keyed request uses 100 limit; keyless uses 20 by IP.\n- `/healthz` never limited even after 1000 calls; non-GET `/healthz` is not exempt.\n- Under-limit requests call `next()` and leave no `Retry-After`.\n\n## Order of work\n1. Limiter + unit tests (red/green).\n2. Middleware + tests.\n3. Wire into app; one integration test against the real app.\n4. Run `tsc` and the full vitest suite.\n\n## Out of scope / caveats\nMulti-process sharing (state is per process by spec), `X-RateLimit-*` headers, persistence across restarts, per-route limits.\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "title": false,
+      "agentic_workers_note": false,
+      "header_fields": false,
+      "global_constraints": false,
+      "review_focus": false,
+      "tasks": false,
+      "files_per_task": false,
+      "interfaces_per_task": false,
+      "checkbox_steps": false,
+      "failing_test_first": false,
+      "spec_values": true
+     },
+     "outputs": {
+      "plan.md": "# Implementation plan: contact import CLI\n\n## Decisions and open points\n- **Stdlib only:** `encoding/csv`, `flag`/`os.Args`, `strings`, `fmt`, `io`, `os`.\n- **\"Rows\" definition:** data rows, excluding the header. A file with exactly 10,000 data rows is accepted; 10,001 is refused. Confirm whether the header counts.\n- **Limit is checked before anything is imported:** parse the entire file first, and count rows; if over the limit, print an error, exit non-zero, import nothing. Parsing everything into memory is fine at ≤10,000 rows, but stop reading as soon as the count exceeds 10,000 so a huge file isn't fully loaded.\n- **Header:** require `name,email,phone`; match columns by header name (case-insensitive, trimmed) so column order may vary. Missing `email` column → fatal error. Missing `name`/`phone` columns → treat as empty (spec says only `email` is required).\n- **Rejected rows:** email empty after trimming whitespace. Should malformed-email syntax also reject? Spec says only \"without one\"; don't validate format. Malformed CSV rows (wrong field count): set `csv.Reader.FieldsPerRecord = -1` and handle short rows as missing fields; a hard parse error rejects the file before import.\n- **Duplicates:** key = `strings.ToLower(strings.TrimSpace(email))`; first row wins; later ones counted as duplicates. Order of checks: reject (no email) first, then duplicate. Duplicate against the *existing address book* is unspecified. Assume within-file only and flag it.\n- **Report:** final line exactly `imported N, duplicates D, rejected R`. The rejected rows are also listed in the report (line number + raw content/reason), printed before the summary line so the summary stays the last line. List to stdout or stderr: pick stderr for the list so stdout carries the summary line; note it.\n- **Address-book interface:** the spec doesn't define the storage API. Define a small `Store` interface (`Add(Contact) error`) and inject it; find the real address-book package in the repo and adapt it. If an import fails mid-way, report the error and exit non-zero.\n- **Exit codes:** 0 on success (even with rejects/duplicates), non-zero on usage error, unreadable file, over-limit file.\n\n## Structure\n- `cmd/import-contacts/main.go`: arg handling (exactly one file argument), open file, call the importer, print the report, set exit code.\n- `internal/contactimport/import.go`: `Run(r io.Reader, store Store) (Report, error)`; `Report{Imported, Duplicates int; Rejected []RejectedRow}`.\n- `internal/contactimport/report.go`: formatting of the summary and rejected list.\n(Adjust paths to the repo's layout.)\n\n## Algorithm\n1. Read the header; resolve column indices; error if no `email`.\n2. Read records, counting data rows; if count > 10,000 → return `ErrTooManyRows` without touching the store.\n3. Classify each row into: rejected, duplicate, or to-import (map of seen emails).\n4. Only after the whole file is classified, call `store.Add` for the to-import contacts in file order.\n5. Return the report.\n\n## Tests (`go test`, table-driven, `strings.NewReader` + a fake store)\n- Happy path with counts and the exact summary string.\n- Missing/blank/whitespace-only email → rejected, listed with its line number.\n- Duplicates differing in case (`A@x.com` vs `a@X.com`): first wins, store has the first row's name/phone.\n- Exactly 10,000 rows accepted; 10,001 refused with zero `Add` calls.\n- Header-only file → `imported 0, duplicates 0, rejected 0`.\n- Reordered columns; missing `email` column fails; quoted fields with commas; CRLF line endings; UTF-8 BOM on the header (strip it).\n- Store error propagates.\n- A small `main` test or a script-level check for: no args, nonexistent file.\n\n## Order of work\n1. Importer core and its tests.\n2. Report formatting.\n3. `main` wiring and the real store adapter.\n4. `go vet`, `go test ./...`; confirm `go.mod` has no new requirements.\n\n## Out of scope\nEmail format validation, phone normalisation, updating existing contacts, dry-run mode, streaming for large files.\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:18:18+00:00",
+   "usage": {
+    "total_tokens": 197928,
+    "input_tokens": 12,
+    "output_tokens": 9528,
+    "cache_write_tokens": 18835,
+    "cache_read_tokens": 169553,
+    "cost_usd": 0.18759930000000002,
+    "turns": 13,
+    "duration_ms": 67694,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32807,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4755,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0218686,
+    "turns": 1,
+    "duration_ms": 2590,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "title": true,
+      "agentic_workers_note": true,
+      "header_fields": true,
+      "global_constraints": true,
+      "review_focus": true,
+      "tasks": true,
+      "files_per_task": true,
+      "interfaces_per_task": true,
+      "checkbox_steps": true,
+      "failing_test_first": true,
+      "spec_values": true
+     },
+     "outputs": {
+      "plan.md": "# Short Links Implementation Plan\n\n> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.\n\n**Goal:** Add `shorten`/`resolve` to the Python service, backed by SQLite.\n\n**Architecture:** One module, `shortlinks.py`, with a `links` table (`code` PRIMARY KEY, `url` UNIQUE). Uniqueness is enforced by the database; collisions surface as `sqlite3.IntegrityError` and trigger a retry with a fresh random code.\n\n**Tech Stack:** Python 3.11+, stdlib only (`sqlite3`, `secrets`), pytest-style tests (stdlib `unittest` if the project has no pytest).\n\n**Spec:** `case-1/spec.md`\n\n## Global Constraints\n\n- Python 3.11 or newer\n- Standard library only (no new dependencies)\n- Code: exactly 7 characters from `23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ`\n- Storage: SQLite file `links.db`\n- Collision: new code each time, `ShortenError` after 3 attempts\n- Same URL shortened twice returns the same code\n\n## Review Focus\n\n1. Empty string / whitespace-only URL passed to `shorten`: raise `ValueError` rather than storing junk.\n2. `resolve` with a malformed code (wrong length, characters outside the alphabet, empty string): returns `None`, never raises.\n3. Two connections/processes shortening the same new URL at once: both get the same code (the URL-unique violation is not mistaken for a code collision).\n4. `links.db` does not exist yet or the process is restarted: file and table are created on demand; earlier links still resolve.\n5. Very long URL (e.g. 10,000 chars): stored and resolved intact.\n\n---\n\n### Task 1: shorten / resolve\n\n**Files:**\n- Create: `shortlinks.py`\n- Test: `tests/test_shortlinks.py`\n\n**Interfaces:**\n- Produces:\n  - `ALPHABET: str` (the 55-char alphabet above), `CODE_LENGTH = 7`, `MAX_ATTEMPTS = 3`, `DB_PATH = \"links.db\"`\n  - `class ShortenError(Exception)`\n  - `def shorten(url: str) -> str`\n  - `def resolve(code: str) -> str | None`\n  - `def _generate_code() -> str` (module-level so tests can monkeypatch it)\n\nTests use a temp directory and monkeypatch `shortlinks.DB_PATH`; `DB_PATH` must be read at call time, and each call opens its own connection.\n\n- [ ] **Step 1: Write failing tests** in `tests/test_shortlinks.py`:\n\n```python\ndef test_code_shape():\n    code = shorten(\"https://example.com/a\")\n    assert len(code) == 7 and set(code) <= set(ALPHABET)\n\ndef test_roundtrip():\n    assert resolve(shorten(\"https://example.com/a\")) == \"https://example.com/a\"\n\ndef test_unknown_code_is_none():\n    assert resolve(\"2222222\") is None\n\ndef test_same_url_same_code():\n    assert shorten(\"https://example.com/a\") == shorten(\"https://example.com/a\")\n\ndef test_collision_retries_then_succeeds(monkeypatch):\n    shorten(\"https://a.example\")  # occupies some code C\n    taken = <that code>\n    codes = iter([taken, taken, \"abcdefg\"])\n    monkeypatch.setattr(shortlinks, \"_generate_code\", lambda: next(codes))\n    assert shorten(\"https://b.example\") == \"abcdefg\"   # 3rd attempt succeeds\n\ndef test_gives_up_after_3_attempts(monkeypatch):\n    shorten(\"https://a.example\")\n    monkeypatch.setattr(shortlinks, \"_generate_code\", lambda: taken)\n    # counts calls; expect pytest.raises(ShortenError) and exactly 3 calls\n```\n\nPlus the Review Focus tests: `test_blank_url_raises_valueerror` (`\"\"`, `\"   \"`), `test_resolve_malformed_returns_none` (`\"\"`, `\"abc\"`, `\"0000000\"`, `\"2222222222\"`), `test_persists_across_connections` (second `resolve` after fresh call, and DB file created when absent), `test_long_url_roundtrip` (10,000 chars), `test_concurrent_same_url` (8 threads call `shorten` on one new URL; set of results has size 1).\n\n- [ ] **Step 2: Run** `pytest tests/test_shortlinks.py -v` — Expected: FAIL (ImportError).\n- [ ] **Step 3: Implement** `_generate_code` using `secrets.choice` over `ALPHABET`, 7 times.\n- [ ] **Step 4: Implement `shorten(url: str) -> str`** in `shortlinks.py`: strip-check for blank → `ValueError`; ensure table exists (`CREATE TABLE IF NOT EXISTS`); first `SELECT code WHERE url=?` and return if found; otherwise loop `MAX_ATTEMPTS` times `INSERT`; on `IntegrityError` re-`SELECT` by url (if found, another writer won: return it), else it was a code collision: continue; after the loop raise `ShortenError`. Set a connection `timeout` of 5s for concurrent writers.\n- [ ] **Step 5: Implement `resolve(code: str) -> str | None`**: return `None` early if `len(code) != 7` or any char is not in `ALPHABET`; else `SELECT url WHERE code=?`.\n- [ ] **Step 6: Run** `pytest tests/test_shortlinks.py -v` — Expected: all PASS.\n- [ ] **Step 7: Commit** `git add shortlinks.py tests/test_shortlinks.py && git commit -m \"feat: add short link shorten/resolve\"`\n"
+     }
+    },
+    "case-2": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "title": true,
+      "agentic_workers_note": true,
+      "header_fields": true,
+      "global_constraints": true,
+      "review_focus": true,
+      "tasks": true,
+      "files_per_task": true,
+      "interfaces_per_task": true,
+      "checkbox_steps": true,
+      "failing_test_first": true,
+      "spec_values": true
+     },
+     "outputs": {
+      "plan.md": "# API Rate Limiting Implementation Plan\n\n> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.\n\n**Goal:** Rate-limit the Express API per API key (100/60s) and per IP for keyless requests (20/60s), in memory.\n\n**Architecture:** A framework-free rolling-window limiter (timestamps per bucket key, injectable clock) wrapped by an Express middleware that picks the bucket, skips `/healthz`, and writes the 429 response.\n\n**Tech Stack:** TypeScript, Node 20, Express, vitest (+ `supertest` only if already a dependency; otherwise call the middleware with stub req/res objects).\n\n**Spec:** `case-2/spec.md`\n\n## Global Constraints\n\n- TypeScript, Node 20, tests with vitest\n- API key: at most 100 requests per rolling 60 seconds\n- No API key: at most 20 requests per 60 seconds per client IP\n- Over limit: HTTP 429 with `Retry-After` header in whole seconds\n- In memory, single process; no Redis\n- `GET /healthz` is never limited\n\n## Review Focus\n\n1. Empty or whitespace `X-API-Key` header: treated as no key (IP limit applies), not as a shared \"\" bucket.\n2. Header sent twice / array value: first value is used, no crash.\n3. Rejected requests: they do not extend the window (a client that keeps hammering recovers 60s after its last *accepted* request).\n4. Memory growth: buckets with no timestamps in the window are evicted; many distinct keys/IPs don't grow the map forever.\n5. `HEAD /healthz`, `/healthz?x=1`, and `/healthz/` : decide-and-pin: `GET`/`HEAD` on path `/healthz` (query ignored) skip; `/healthz/` is limited like any other route.\n\n---\n\n### Task 1: Rolling-window limiter\n\n**Files:**\n- Create: `src/rateLimit/limiter.ts`\n- Test: `src/rateLimit/limiter.test.ts`\n\n**Interfaces:**\n- Produces:\n  - `type Decision = { allowed: true } | { allowed: false; retryAfterSeconds: number }`\n  - `class RollingWindowLimiter { constructor(opts: { limit: number; windowMs: number; now?: () => number }); hit(key: string): Decision; sweep(): void }`\n\n- [ ] **Step 1: Write failing tests** (fake `now`): \n  - `allows exactly limit hits then rejects`: limit 3, hits 1-3 allowed, 4th `{allowed:false}`.\n  - `retryAfterSeconds is ceil of time until oldest hit expires, min 1`: hits at t=0, 10_000, 20_000 (limit 3); at t=30_000 → `retryAfterSeconds === 30`; at t=59_500 → `1`.\n  - `window is rolling`: after t=60_000 the t=0 hit no longer counts, next hit allowed (boundary: a hit at exactly `t+windowMs` is expired).\n  - `rejected hits are not recorded` (Review 3): hammer 50 times while blocked at t=1000; at t=60_000 one hit is allowed.\n  - `keys are independent`.\n  - `sweep removes idle keys` (Review 4): expose `size` getter; after window passes and `sweep()`, `size === 0`.\n- [ ] **Step 2: Run** `npx vitest run src/rateLimit/limiter.test.ts` — Expected: FAIL (module missing).\n- [ ] **Step 3: Implement** the class with `Map<string, number[]>`; `hit` prunes timestamps `<= now - windowMs`, then allows/rejects; add `get size(): number`.\n- [ ] **Step 4: Run** the same command — Expected: PASS.\n- [ ] **Step 5: Commit** `git add src/rateLimit && git commit -m \"feat: rolling window limiter\"`\n\n### Task 2: Express middleware and wiring\n\n**Files:**\n- Create: `src/rateLimit/middleware.ts`\n- Modify: the app setup file where middleware is registered (e.g. `src/app.ts`): register `rateLimit()` before the routers.\n- Test: `src/rateLimit/middleware.test.ts`\n\n**Interfaces:**\n- Consumes: `RollingWindowLimiter`, `Decision` from Task 1.\n- Produces: `function rateLimit(opts?: { apiKeyLimit?: number; ipLimit?: number; windowMs?: number; now?: () => number }): RequestHandler` — defaults 100, 20, 60_000. Owns two limiters (key and IP) and a `setInterval(...).unref()` sweep every windowMs.\n\nDecisions: API key is read from header `X-API-Key` (spec names no header; confirm with the team); client IP is `req.ip` (deployers set `trust proxy` as needed); bucket keys are `key:<value>` and `ip:<value>`.\n\n- [ ] **Step 1: Write failing tests**:\n  - `101st request with same key gets 429 and Retry-After`: status 429, `Retry-After` matches `/^\\d+$/` and ≥ 1.\n  - `21st keyless request from one IP gets 429`; a different IP (`req.ip`) still passes.\n  - `keyed requests are not counted against the IP bucket`: 100 keyed requests, then keyless request from same IP passes.\n  - `/healthz never limited`: 500 `GET /healthz` calls all call `next()`; `HEAD /healthz` and `/healthz?x=1` also (Review 5); `/healthz/` is limited.\n  - `blank API key uses IP limit` (`\"\"`, `\"  \"`) and `array header value uses first` (Review 1, 2).\n- [ ] **Step 2: Run** `npx vitest run src/rateLimit/middleware.test.ts` — Expected: FAIL.\n- [ ] **Step 3: Implement `rateLimit`**: skip when `(req.method === \"GET\" || req.method === \"HEAD\") && req.path === \"/healthz\"`; normalise key header (first value, trimmed; empty → none); on rejection set `Retry-After` to `String(retryAfterSeconds)`, `res.status(429).json({ error: \"rate_limit_exceeded\" })`.\n- [ ] **Step 4: Wire it** into the app and run the full suite `npx vitest run` — Expected: PASS.\n- [ ] **Step 5: Commit** `git add src && git commit -m \"feat: API rate limiting middleware\"`\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "title": true,
+      "agentic_workers_note": true,
+      "header_fields": true,
+      "global_constraints": true,
+      "review_focus": true,
+      "tasks": true,
+      "files_per_task": true,
+      "interfaces_per_task": true,
+      "checkbox_steps": true,
+      "failing_test_first": true,
+      "spec_values": true
+     },
+     "outputs": {
+      "plan.md": "# Contact Import Implementation Plan\n\n> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.\n\n**Goal:** A CLI `import-contacts <file.csv>` that loads contacts into the address book and prints a summary.\n\n**Architecture:** An `importer` package does all the work against a small `Store` interface (the spec does not describe the address book's API); `cmd/import-contacts/main.go` only parses args, opens the file, wires the real store, prints the report, and sets the exit code. The whole file is parsed and validated first, so an oversize file is refused before anything is imported.\n\n**Tech Stack:** Go 1.22, `encoding/csv`, `testing`; standard library only.\n\n**Spec:** `case-3/spec.md`\n\n## Global Constraints\n\n- Go 1.22, no third-party modules\n- Columns: `name,email,phone`; `email` required\n- Rows with no email are rejected and listed in the report\n- Duplicates detected by lowercased email; first row wins\n- At most 10,000 rows per file; larger files refused before anything is imported\n- Final line: `imported N, duplicates D, rejected R`\n\n## Review Focus\n\n1. Whitespace-only email or `  A@X.com ` vs `a@x.com`: trim before the required check and duplicate key.\n2. UTF-8 BOM at file start (Excel exports): stripped so the `name` header still matches.\n3. Header columns in a different order, or missing the `email` column: columns found by header name; no `email` column → error, nothing imported.\n4. Short rows (fewer than 3 fields), blank lines, empty file (header only or zero bytes): short rows count by what they have (missing email → rejected), blank lines are skipped, empty file reports `imported 0, duplicates 0, rejected 0`.\n5. File not found / unreadable: message on stderr, exit code 1, no report line.\n\n---\n\n### Task 1: Parse, validate, import\n\n**Files:**\n- Create: `internal/importer/importer.go`\n- Test: `internal/importer/importer_test.go`\n\n**Interfaces:**\n- Produces:\n  - `const MaxRows = 10000`\n  - `type Contact struct { Name, Email, Phone string }`\n  - `type Store interface { Add(c Contact) error }`\n  - `type Rejected struct { Line int; Reason string }` (`Line` is the 1-based file line of the record start)\n  - `type Result struct { Imported, Duplicates int; Rejected []Rejected }`\n  - `var ErrTooManyRows = errors.New(...)`\n  - `func Import(r io.Reader, s Store) (Result, error)`\n\nRow counting: data rows (excluding the header, excluding blank lines) count toward `MaxRows`; 10,000 is allowed, 10,001 returns `ErrTooManyRows` with zero `Add` calls. Rejected rows count toward the cap. A `Store.Add` error aborts and is returned wrapped.\n\n- [ ] **Step 1: Write failing tests** with a `fakeStore` recording adds:\n  - `TestImportCounts`: rows `A,a@x.com,1` / `B,A@X.com,2` / `C,,3` / `D,d@x.com,4` → `Imported 2, Duplicates 1, Rejected == [{Line:4, ...}]`; the store holds name `A` (first wins), not `B`.\n  - `TestTooManyRows`: 10,001 rows → `errors.Is(err, ErrTooManyRows)`, `len(store.added)==0`; 10,000 rows → success.\n  - `TestTrimmedEmail`: `\" A@x.com \"` and `a@x.com` are duplicates; `\"   \"` is rejected.\n  - `TestBOM`, `TestReorderedColumns` (`email,name,phone`), `TestMissingEmailColumn` (error, zero adds), `TestShortRow` (`B` only → rejected), `TestBlankLinesSkipped`, `TestEmptyInput` (zero bytes and header-only → zero Result, nil error).\n- [ ] **Step 2: Run** `go test ./internal/importer/ -run . -v` — Expected: FAIL (undefined: Import).\n- [ ] **Step 3: Implement `Import`**: wrap reader to drop a leading BOM; `csv.Reader` with `FieldsPerRecord = -1`, `TrimLeadingSpace` off (trim manually), `ReadAll`-style loop using `csv.Reader.FieldPos` for line numbers; map header names (trimmed, lowercased) to indexes; first pass collects records and enforces `MaxRows`; second pass dedupes via `map[string]struct{}` on `strings.ToLower(strings.TrimSpace(email))` and calls `Add`.\n- [ ] **Step 4: Run** `go test ./internal/importer/ -v` — Expected: PASS.\n- [ ] **Step 5: Commit** `git add internal/importer && git commit -m \"feat: contact importer\"`\n\n### Task 2: CLI\n\n**Files:**\n- Create: `cmd/import-contacts/main.go`\n- Test: `cmd/import-contacts/main_test.go`\n\n**Interfaces:**\n- Consumes: `importer.Import`, `importer.Result`, `importer.Store`, `importer.ErrTooManyRows`.\n- Produces: `func run(args []string, stdout, stderr io.Writer, s importer.Store) int` (returns exit code; `main` calls it with `os.Args[1:]`, `os.Stdout`, `os.Stderr` and the real address-book store, whose constructor lives in the existing codebase).\n\nOutput: for each rejected row, a line `rejected line L: reason` on stdout, then exactly `imported N, duplicates D, rejected R`. Exit 0 on success (even with rejected rows), 1 on any error, 2 on wrong arg count (usage on stderr).\n\n- [ ] **Step 1: Write failing tests** using temp CSV files and a fake store: `TestRunPrintsReport` (stdout ends with `imported 2, duplicates 1, rejected 1\\n`, includes `rejected line 4`, exit 0); `TestRunTooManyRows` (exit 1, stderr mentions limit of 10,000, stdout has no report line); `TestRunMissingFile` (exit 1, stderr non-empty, no report line); `TestRunNoArgs` (exit 2).\n- [ ] **Step 2: Run** `go test ./cmd/import-contacts/ -v` — Expected: FAIL.\n- [ ] **Step 3: Implement `run` and `main`.**\n- [ ] **Step 4: Run** `go test ./... && go vet ./...` — Expected: PASS.\n- [ ] **Step 5: Commit** `git add cmd && git commit -m \"feat: import-contacts CLI\"`\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}

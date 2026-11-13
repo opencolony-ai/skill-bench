@@ -1,0 +1,167 @@
+{
+ "schema": 1,
+ "skill": "caveman-review",
+ "version": "c15c25f22b95",
+ "author": "juliusbrussee",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:17:25+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:16:36+00:00",
+   "usage": {
+    "total_tokens": 139565,
+    "input_tokens": 8,
+    "output_tokens": 2660,
+    "cache_write_tokens": 8467,
+    "cache_read_tokens": 128430,
+    "cost_usd": 0.073327,
+    "turns": 11,
+    "duration_ms": 21375,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32768,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 5276,
+    "cache_read_tokens": 27486,
+    "cost_usd": 0.0238966,
+    "turns": 1,
+    "duration_ms": 2764,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "one_line_per_finding": false,
+      "no_hedging": false,
+      "bugs_found": true
+     },
+     "outputs": {
+      "review.md": "**pager.py**\n\n- **Line 3 (bug):** The docstring says pages start at 1, but `start = page * per_page` is 0-based. `paginate(items, 1)` skips the first page, and `paginate(items, 0)` returns it. Use `start = (page - 1) * per_page`. Consider raising `ValueError` for `page < 1`, because a negative page would slice from the end of the list.\n- **Line 10 (bug):** `n_items // per_page` rounds down, so a partial last page is not counted. For example, 25 items with 20 per page gives 1 instead of 2. Use ceiling division: `-(-n_items // per_page)` or `math.ceil(n_items / per_page)`.\n- **Suggestion:** Guard against `per_page <= 0`. It gives a `ZeroDivisionError` in `total_pages` and odd slices in `paginate`.\n- **Suggestion:** Add tests for the boundaries: first page, last partial page, empty list, and exact multiples.\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "one_line_per_finding": false,
+      "no_hedging": true,
+      "bugs_found": true
+     },
+     "outputs": {
+      "review.md": "**greet.js**\n\n- **Line 2 (bug):** `fetch` is not awaited, so `res` is a Promise. `res.ok` is `undefined`, so line 3 always throws \"load failed\" and the request never works. Use `const res = await fetch(...)`.\n- **Line 4 (improvement):** The error doesn't say which request failed or why. Include the id and `res.status`, e.g. `` `load failed for user ${id}: ${res.status}` ``.\n- **Line 10 (minor):** If `firstName` or `lastName` is missing, the name renders as \"undefined Smith\". Add a fallback or filter out empty parts.\n- **Line 15-16 (minor):** `getElementById` can return `null`, which makes line 16 throw a TypeError. Check for it. Also, `greet` has no error handling, so a failed load becomes an unhandled rejection with no feedback for the user.\n- `textContent` is the right choice here, because it avoids HTML injection from user names.\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "one_line_per_finding": false,
+      "no_hedging": true,
+      "bugs_found": true
+     },
+     "outputs": {
+      "review.md": "**settings.py**\n\n- **Line 4 and 11 (bug):** `overrides={}` is a mutable default argument, and line 11 mutates it with `overrides[\"loaded\"] = True`. The default dict is shared across calls, so `\"loaded\"` persists and leaks into the results of later calls. It also mutates a caller-supplied dict, which is a surprising side effect. Use `overrides=None` and `overrides = dict(overrides or {})`. Better still, drop line 11 or set the flag on `data` if that was the intent.\n- **Line 8-9 (bug):** `except Exception` swallows every error, including malformed JSON and permission errors, and silently falls back to `{}`. A broken config file then looks the same as a missing one. Catch `FileNotFoundError` for the fallback and let parse errors surface, or at least log them.\n- **Line 7 (minor):** `json.load` may return a non-dict, such as a list. Then `data.update` on line 10 fails. Validate the type.\n- **Line 6 (minor):** Pass `encoding=\"utf-8\"` to `open`.\n- **Suggestion:** Add tests for a missing file, bad JSON, and repeated calls, since the repeated-call test would catch the shared default.\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:17:03+00:00",
+   "usage": {
+    "total_tokens": 139522,
+    "input_tokens": 8,
+    "output_tokens": 2594,
+    "cache_write_tokens": 8319,
+    "cache_read_tokens": 128601,
+    "cost_usd": 0.07209209999999999,
+    "turns": 11,
+    "duration_ms": 21291,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32820,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4768,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0219206,
+    "turns": 1,
+    "duration_ms": 3538,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "one_line_per_finding": false,
+      "no_hedging": true,
+      "bugs_found": true
+     },
+     "outputs": {
+      "review.md": "pager.py:3 🔴 bug: Pages start at 1 (per docstring) but `page * per_page` skips first page; page 1 returns items 20-39. Fix: `start = (page - 1) * per_page`.\n\npager.py:10 🔴 bug: Floor division drops partial last page; 25 items → 1 page, 0 items → 0. Fix: `-(-n_items // per_page)` or `math.ceil(n_items / per_page)`.\n\npager.py:1 🟡 risk: No validation; `page < 1` gives negative slice, `per_page <= 0` gives wrong or empty result (and ZeroDivisionError in `total_pages`). Fix: raise `ValueError` on bad input.\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "one_line_per_finding": false,
+      "no_hedging": true,
+      "bugs_found": true
+     },
+     "outputs": {
+      "review.md": "greet.js:2 🔴 bug: `fetch` not awaited, so `res` is a Promise; `res.ok` is undefined, so it always throws \"load failed\". Fix: `const res = await fetch(...)`.\n\ngreet.js:4 🟡 risk: Generic error drops the HTTP status and user id. Fix: include `res.status` and `id` in the message.\n\ngreet.js:10 🟡 risk: Missing or null name parts render \"undefined\". Fix: default to \"\" and trim, or fall back to another field.\n\ngreet.js:15 🟡 risk: `getElementById` can return null, so line 16 throws TypeError. Fix: guard with `if (!el) return;`.\n\ngreet.js:14 🔵 nit: `greet` has no error handling, so a failed load is an unhandled rejection. Fix: catch and show an error state, or document that callers must handle it.\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "one_line_per_finding": false,
+      "no_hedging": false,
+      "bugs_found": true
+     },
+     "outputs": {
+      "review.md": "settings.py:4 🔴 bug: Mutable default `overrides={}` is shared across calls. Line 11 writes `loaded` into it, so state leaks into every later call's result. Fix: `overrides=None`, then `overrides = dict(overrides or {})`.\n\nsettings.py:11 🔴 bug: Mutates the caller's `overrides` dict, a side effect callers don't expect. Fix: drop the line; if a `loaded` flag is needed, set it on `data` (or return it separately).\n\nsettings.py:8 🟡 risk: `except Exception` hides every failure (bad JSON, permissions, typo in path) and silently uses `{}`. Fix: catch `FileNotFoundError` (and maybe `json.JSONDecodeError`, with a log), let the rest raise.\n\nsettings.py:7 🟡 risk: `json.load` may return a non-dict (list, null), so `data.update` raises. Fix: check `isinstance(data, dict)`.\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}

@@ -1,0 +1,204 @@
+{
+ "schema": 1,
+ "skill": "frontend-design",
+ "version": "434bdb795c8c",
+ "author": "anthropics",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:19:02+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:16:37+00:00",
+   "usage": {
+    "total_tokens": 150097,
+    "input_tokens": 8,
+    "output_tokens": 8769,
+    "cache_write_tokens": 13845,
+    "cache_read_tokens": 127475,
+    "cost_usd": 0.1558335,
+    "turns": 8,
+    "duration_ms": 60670,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32765,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 5273,
+    "cache_read_tokens": 27486,
+    "cost_usd": 0.0238846,
+    "turns": 1,
+    "duration_ms": 3180,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 3,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "no_all_caps_labels": false,
+      "no_arrow_suffix": true,
+      "no_middot_meta": true,
+      "no_default_palette": false,
+      "no_default_shadow": true,
+      "keyboard_focus": true,
+      "reduced_motion": true,
+      "responsive": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Tidewater — Port Aird tides and boating safety</title>\n<meta name=\"description\" content=\"Community-run tide times and boating-safety notes for Port Aird harbour.\">\n<style>\n:root{\n  --bg:#f4f1e8; --ink:#0f2a3a; --muted:#4a606d; --sea:#0b5c7a; --sea-dk:#073d54;\n  --card:#fffdf7; --line:#d7d2c2; --warn:#b4491b; --on-sea:#ffffff;\n}\n@media (prefers-color-scheme:dark){\n  :root{--bg:#0b1c26;--ink:#eaf1f3;--muted:#a3b8c2;--sea:#5cc0e0;--sea-dk:#8fd6ee;--card:#12303f;--line:#26485a;--warn:#f0a272;--on-sea:#06202c}\n}\n*{box-sizing:border-box}\nhtml{-webkit-text-size-adjust:100%}\nbody{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 Georgia,\"Iowan Old Style\",serif}\n.wrap{max-width:44rem;margin:0 auto;padding:0 16px}\nheader{padding:20px 0 0;display:flex;justify-content:space-between;align-items:center;font-family:system-ui,sans-serif}\n.logo{font-weight:800;letter-spacing:.02em;font-size:1.05rem}\n.logo span{color:var(--sea)}\nheader small{color:var(--muted);font-size:.85rem}\nh1{font-size:clamp(2.2rem,9vw,3.6rem);line-height:1.05;margin:2rem 0 1rem;letter-spacing:-.02em}\n.lede{font-size:1.15rem;color:var(--muted);margin:0 0 1.5rem}\n.btn{display:block;text-align:center;background:var(--sea);color:var(--on-sea);text-decoration:none;\n  font:700 1.2rem system-ui,sans-serif;padding:18px 24px;border-radius:12px;min-height:56px}\n.btn:hover{background:var(--sea-dk)}\n.btn:focus-visible,a:focus-visible{outline:3px solid var(--warn);outline-offset:3px}\n@media(min-width:560px){.btn{display:inline-block}}\n.note{font:.9rem system-ui,sans-serif;color:var(--muted);margin-top:.8rem}\n.tide{margin:2.5rem 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;font-family:system-ui,sans-serif}\n.tide h2{margin:0 0 .2rem;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}\n.tide p.s{margin:0 0 1rem;font-size:.85rem;color:var(--muted)}\n.row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--line);font-size:1.1rem}\n.row b{font-size:1.4rem;font-variant-numeric:tabular-nums}\n.row .m{color:var(--muted);font-size:.95rem}\nsection{margin:3rem 0}\nh2.t{font-size:1.6rem;margin:0 0 1rem;letter-spacing:-.01em}\n.feat{display:grid;gap:14px}\n.feat div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}\n.feat h3{margin:0 0 .3rem;font:700 1.05rem system-ui,sans-serif}\n.feat p{margin:0;color:var(--muted);font-size:1rem}\n@media(min-width:640px){.feat{grid-template-columns:1fr 1fr}}\n.safety{border-left:6px solid var(--warn);padding:4px 0 4px 18px}\n.safety p{margin:.4rem 0}\nfooter{border-top:1px solid var(--line);padding:24px 0 40px;font:.9rem system-ui,sans-serif;color:var(--muted)}\n</style>\n</head>\n<body>\n<div class=\"wrap\">\n  <header>\n    <div class=\"logo\">Tide<span>water</span></div>\n    <small>Port Aird</small>\n  </header>\n\n  <main>\n    <h1>Know the water before you cast off.</h1>\n    <p class=\"lede\">Tide times and boating-safety notes for Port Aird harbour, kept up to date by people who actually use it.</p>\n    <a class=\"btn\" href=\"#today\" id=\"today-link\">See today's tides</a>\n    <p class=\"note\">Free. Works on your phone, no sign-up.</p>\n\n    <div class=\"tide\" id=\"today\" aria-labelledby=\"tt\">\n      <h2 id=\"tt\">Today at Port Aird</h2>\n      <p class=\"s\">Example layout — the app shows the real times for today.</p>\n      <div class=\"row\"><span>High water</span><b>06:12</b><span class=\"m\">5.4 m</span></div>\n      <div class=\"row\"><span>Low water</span><b>12:24</b><span class=\"m\">0.8 m</span></div>\n      <div class=\"row\"><span>High water</span><b>18:41</b><span class=\"m\">5.6 m</span></div>\n    </div>\n\n    <section>\n      <h2 class=\"t\">Made for the dock</h2>\n      <div class=\"feat\">\n        <div><h3>Big, readable times</h3><p>Check high and low water in a glance, even in glare or with wet hands.</p></div>\n        <div><h3>Harbour-specific</h3><p>Built around Port Aird, not a distant reference port.</p></div>\n        <div><h3>Safety notes</h3><p>Local hazards, bar and slipway cautions, shared by the community.</p></div>\n        <div><h3>Community-run</h3><p>Maintained by volunteers who know the harbour. No ads.</p></div>\n      </div>\n    </section>\n\n    <section class=\"safety\">\n      <h2 class=\"t\">Check, then go</h2>\n      <p>Tide tables are a guide. Always check the weather and the water yourself, wear a lifejacket, and tell someone your plans.</p>\n      <p>In an emergency, call 999 or 112 and ask for the Coastguard.</p>\n    </section>\n\n    <a class=\"btn\" href=\"#today\">See today's tides</a>\n  </main>\n\n  <footer>Tidewater is a community project for Port Aird. Not a substitute for official navigation sources.</footer>\n</div>\n</body>\n</html>\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "no_all_caps_labels": false,
+      "no_arrow_suffix": true,
+      "no_middot_meta": true,
+      "no_default_palette": true,
+      "no_default_shadow": true,
+      "keyboard_focus": true,
+      "reduced_motion": true,
+      "responsive": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Ledgerly — bookkeeping for independent bakeries</title>\n<meta name=\"description\" content=\"Bookkeeping software for independent bakeries that reconciles your card payments for you. 30-day free trial.\">\n<style>\n:root{--bg:#fbf6ee;--ink:#2b1d14;--muted:#6a5646;--accent:#a8410f;--accent-dk:#7f2f08;--card:#fff;--line:#e6d9c6;--ok:#2e6b3f;--cream:#f3e7d3}\n@media (prefers-color-scheme:dark){:root{--bg:#1e1510;--ink:#f6ebdc;--muted:#c3ae98;--accent:#f0955a;--accent-dk:#ffb07f;--card:#2a1d15;--line:#4a3628;--ok:#8fd19f;--cream:#2a1d15}}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 system-ui,-apple-system,\"Segoe UI\",sans-serif}\n.wrap{max-width:62rem;margin:0 auto;padding:0 16px}\nnav{display:flex;justify-content:space-between;align-items:center;padding:18px 0}\n.logo{font:700 1.4rem Georgia,serif}\n.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;padding:15px 26px;border-radius:10px;min-height:48px}\n@media (prefers-color-scheme:dark){.btn{color:#1e1510}}\n.btn:hover{background:var(--accent-dk)}\n.btn.sm{padding:10px 18px;font-size:.95rem;min-height:44px}\na:focus-visible,.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}\n.hero{display:grid;gap:32px;padding:32px 0 48px}\nh1{font:700 clamp(2.1rem,7vw,3.7rem)/1.08 Georgia,serif;margin:0 0 1rem;letter-spacing:-.01em}\n.lede{font-size:1.2rem;color:var(--muted);margin:0 0 1.5rem;max-width:34rem}\n.small{font-size:.9rem;color:var(--muted);margin-top:.8rem}\n.rec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 6px 20px rgba(60,30,10,.07)}\n.rec h2{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 .8rem}\n.line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}\n.line .ok{color:var(--ok);font-weight:700;white-space:nowrap}\n.sum{margin-top:.8rem;padding:12px;background:var(--cream);border-radius:8px;font-weight:600}\n@media(min-width:820px){.hero{grid-template-columns:1.1fr .9fr;align-items:center;padding:56px 0 72px}}\nsection{padding:48px 0;border-top:1px solid var(--line)}\nh2.t{font:700 clamp(1.6rem,5vw,2.2rem)/1.15 Georgia,serif;margin:0 0 1.5rem}\n.steps{display:grid;gap:20px;counter-reset:s;padding:0;list-style:none;margin:0}\n.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}\n.steps li::before{content:counter(s);display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;margin-bottom:.5rem}\n@media (prefers-color-scheme:dark){.steps li::before{color:#1e1510}}\n.steps h3{margin:0 0 .25rem;font-size:1.1rem}\n.steps p{margin:0;color:var(--muted)}\n@media(min-width:760px){.steps,.pts{grid-template-columns:repeat(3,1fr)}}\n.pts{display:grid;gap:20px}\n.pts h3{margin:0 0 .3rem;font-size:1.1rem}.pts p{margin:0;color:var(--muted)}\n.cta{text-align:center;background:var(--cream);border-radius:16px;padding:44px 20px;margin:24px 0 48px;border:1px solid var(--line)}\n.cta h2{font:700 clamp(1.6rem,5vw,2.2rem) Georgia,serif;margin:0 0 .6rem}\n.cta p{margin:0 0 1.4rem;color:var(--muted)}\nfooter{padding:0 0 40px;color:var(--muted);font-size:.9rem}\n</style>\n</head>\n<body>\n<div class=\"wrap\">\n  <nav><div class=\"logo\">Ledgerly</div><a class=\"btn sm\" href=\"#trial\">Start free trial</a></nav>\n  <main>\n    <div class=\"hero\">\n      <div>\n        <h1>Your card payments, reconciled before the ovens cool.</h1>\n        <p class=\"lede\">Ledgerly is bookkeeping software for independent bakeries. It matches every card payment to your sales and your bank deposits, so you don't have to.</p>\n        <a class=\"btn\" href=\"#trial\">Start your 30-day free trial</a>\n        <p class=\"small\">Free for 30 days. Cancel any time.</p>\n      </div>\n      <div class=\"rec\" aria-label=\"Example of a reconciled day\">\n        <h2>Yesterday, reconciled</h2>\n        <div class=\"line\"><span>Card sales — counter</span><span>£842.60</span></div>\n        <div class=\"line\"><span>Card sales — wholesale</span><span>£310.00</span></div>\n        <div class=\"line\"><span>Processor fees</span><span>−£21.14</span></div>\n        <div class=\"line\"><span>Bank deposit</span><span class=\"ok\">✓ Matches</span></div>\n        <div class=\"sum\">Nothing for you to check.</div>\n      </div>\n    </div>\n\n    <section aria-labelledby=\"how\">\n      <h2 class=\"t\" id=\"how\">Done while you're baking</h2>\n      <ol class=\"steps\">\n        <li><h3>Connect once</h3><p>Link your card processor and your bank. It takes minutes, not an afternoon.</p></li>\n        <li><h3>We match it up</h3><p>Each day's card payments, fees and deposits are matched automatically.</p></li>\n        <li><h3>You only see exceptions</h3><p>If something doesn't add up, we flag it in plain language. Otherwise, nothing to do.</p></li>\n      </ol>\n    </section>\n\n    <section aria-labelledby=\"why\">\n      <h2 class=\"t\" id=\"why\">Built for bakeries, not accountants</h2>\n      <div class=\"pts\">\n        <div><h3>Plain words</h3><p>No jargon. Know where the money went at a glance.</p></div>\n        <div><h3>Quick on a phone</h3><p>Check the day's takings from the back room between batches.</p></div>\n        <div><h3>Ready for tax time</h3><p>Clean records your accountant can use, whenever they ask.</p></div>\n      </div>\n    </section>\n\n    <div class=\"cta\" id=\"trial\">\n      <h2>Get your mornings back.</h2>\n      <p>Try Ledgerly free for 30 days and see your first day reconciled.</p>\n      <a class=\"btn\" href=\"#trial\">Start your 30-day free trial</a>\n    </div>\n  </main>\n  <footer>© Ledgerly. Bookkeeping for independent bakeries.</footer>\n</div>\n</body>\n</html>\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "no_all_caps_labels": true,
+      "no_arrow_suffix": true,
+      "no_middot_meta": false,
+      "no_default_palette": false,
+      "no_default_shadow": true,
+      "keyboard_focus": true,
+      "reduced_motion": true,
+      "responsive": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Fernhill Reading Room — a lending library in the old railway station</title>\n<meta name=\"description\" content=\"A volunteer-run lending library in a converted railway station. Open Tuesday to Saturday, 10:00–17:00.\">\n<style>\n:root{--bg:#f2ede2;--ink:#1f2a24;--muted:#52605a;--green:#1f4d3a;--green-dk:#143627;--card:#fbf8f0;--line:#d5cdb8;--brass:#8a5a14;--on-green:#f6f1e4}\n@media (prefers-color-scheme:dark){:root{--bg:#141b17;--ink:#ece6d6;--muted:#a9b5ad;--green:#7cc3a0;--green-dk:#a5dcc0;--card:#1c2620;--line:#33433a;--brass:#e0b563;--on-green:#10211a}}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--bg);color:var(--ink);font:18px/1.65 Georgia,\"Iowan Old Style\",serif}\n.wrap{max-width:54rem;margin:0 auto;padding:0 16px}\nheader{padding:20px 0;border-bottom:3px double var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}\n.logo{font-weight:700;font-size:1.2rem;letter-spacing:.03em}\nheader a{font:600 .95rem system-ui,sans-serif;color:var(--green)}\nh1{font-size:clamp(2.3rem,8vw,4rem);line-height:1.05;margin:2.5rem 0 1rem;letter-spacing:-.01em}\n.lede{font-size:1.2rem;color:var(--muted);max-width:36rem;margin:0 0 1.6rem}\n.btn{display:inline-block;background:var(--green);color:var(--on-green);text-decoration:none;font:700 1.05rem system-ui,sans-serif;padding:15px 26px;border-radius:6px;min-height:48px}\n.btn:hover{background:var(--green-dk)}\n.btn.alt{background:transparent;color:var(--green);border:2px solid var(--green);margin-left:8px}\n.btn.alt:hover{background:var(--card)}\na:focus-visible{outline:3px solid var(--brass);outline-offset:3px}\n.actions{display:flex;flex-wrap:wrap;gap:12px}.btn.alt{margin-left:0}\n.hours{margin:3rem 0;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--brass);border-radius:4px;padding:24px;display:grid;gap:20px}\n.hours h2,h2.t{margin:0 0 .6rem;font-size:1.7rem}\ntable{border-collapse:collapse;width:100%;font-family:system-ui,sans-serif;font-variant-numeric:tabular-nums}\nth,td{text-align:left;padding:8px 0;border-bottom:1px solid var(--line);font-weight:400}\nth{font-weight:600}\ntd{text-align:right}\ntr.closed{color:var(--muted)}\n.where p{margin:0 0 .6rem}\n@media(min-width:700px){.hours{grid-template-columns:1fr 1fr;gap:40px}}\nsection{margin:3rem 0}\nsection p{max-width:38rem}\n.join{background:var(--green);color:var(--on-green);border-radius:6px;padding:32px 24px;margin:3rem 0}\n.join h2{margin:0 0 .6rem;font-size:1.8rem}\n.join p{margin:0 0 1.2rem;max-width:36rem}\n.join .btn{background:var(--on-green);color:var(--green)}\n.join .btn:hover{background:#fff}\n.join a:focus-visible{outline-color:var(--on-green)}\nfooter{border-top:3px double var(--line);padding:24px 0 40px;font:.9rem system-ui,sans-serif;color:var(--muted)}\n</style>\n</head>\n<body>\n<div class=\"wrap\">\n  <header>\n    <div class=\"logo\">Fernhill Reading Room</div>\n    <a href=\"#hours\">Opening hours</a>\n  </header>\n  <main>\n    <h1>A library in the old railway station.</h1>\n    <p class=\"lede\">Fernhill Reading Room is a volunteer-run lending library. Borrow books where the trains used to stop, and read a while by the platform windows.</p>\n    <div class=\"actions\">\n      <a class=\"btn\" href=\"#join\">Become a member</a>\n      <a class=\"btn alt\" href=\"#hours\">See opening hours</a>\n    </div>\n\n    <div class=\"hours\" id=\"hours\">\n      <div>\n        <h2>Opening hours</h2>\n        <table>\n          <tr><th scope=\"row\">Monday</th><td>Closed</td></tr>\n          <tr><th scope=\"row\">Tuesday</th><td>10:00–17:00</td></tr>\n          <tr><th scope=\"row\">Wednesday</th><td>10:00–17:00</td></tr>\n          <tr><th scope=\"row\">Thursday</th><td>10:00–17:00</td></tr>\n          <tr><th scope=\"row\">Friday</th><td>10:00–17:00</td></tr>\n          <tr><th scope=\"row\">Saturday</th><td>10:00–17:00</td></tr>\n          <tr class=\"closed\"><th scope=\"row\">Sunday</th><td>Closed</td></tr>\n        </table>\n      </div>\n      <div class=\"where\">\n        <h2>Find us</h2>\n        <p>In the former Fernhill railway station building. Look for the platform canopy.</p>\n        <p>Everyone is welcome to come in and browse. Membership is for borrowing.</p>\n      </div>\n    </div>\n\n    <section>\n      <h2 class=\"t\">Run by volunteers, for the neighbourhood</h2>\n      <p>The shelves are stocked by donation and kept by people who love books. Come in, ask what's good, and take something home.</p>\n    </section>\n\n    <div class=\"join\" id=\"join\">\n      <h2>Become a member</h2>\n      <p>Join to borrow from the collection. Ask at the desk during opening hours and a volunteer will sign you up.</p>\n      <a class=\"btn\" href=\"#hours\">Check when we're open</a>\n    </div>\n  </main>\n  <footer>Fernhill Reading Room · Tuesday–Saturday, 10:00–17:00 · Volunteer-run</footer>\n</div>\n</body>\n</html>\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:17:42+00:00",
+   "usage": {
+    "total_tokens": 195669,
+    "input_tokens": 12,
+    "output_tokens": 11631,
+    "cache_write_tokens": 19626,
+    "cache_read_tokens": 164400,
+    "cost_usd": 0.21127799999999997,
+    "turns": 10,
+    "duration_ms": 79002,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32840,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4788,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0220006,
+    "turns": 1,
+    "duration_ms": 2694,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 3,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "no_all_caps_labels": true,
+      "no_arrow_suffix": true,
+      "no_middot_meta": true,
+      "no_default_palette": true,
+      "no_default_shadow": true,
+      "keyboard_focus": true,
+      "reduced_motion": true,
+      "responsive": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Tidewater – Port Aird tide times</title>\n<meta name=\"description\" content=\"Community-run tide tables and boating-safety notes for Port Aird harbour.\">\n<style>\n:root{\n  --paper:#dfe8e6; --ink:#10303a; --deep:#0b2530; --sea:#8fb9bd; --buoy:#d2412b; --white:#f7faf9; --muted:#47626a;\n  --serif:\"Iowan Old Style\",\"Palatino Linotype\",Palatino,\"Book Antiqua\",Georgia,serif;\n  --sans:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;\n}\n*{box-sizing:border-box}\nhtml{-webkit-text-size-adjust:100%}\nbody{margin:0;background:var(--paper);color:var(--ink);font:1.0625rem/1.55 var(--sans)}\na{color:inherit}\n:focus-visible{outline:3px solid var(--buoy);outline-offset:3px}\n.wrap{max-width:62rem;margin:0 auto;padding:0 1.25rem}\nheader.top{display:flex;justify-content:space-between;align-items:center;padding:1rem 0}\n.brand{font:700 1.35rem var(--serif);text-decoration:none;letter-spacing:.01em}\n.top a.small{font-size:.95rem}\n.hero{background:var(--deep);color:var(--white);padding:1.5rem 0 2.5rem}\n.hero .wrap{display:grid;gap:1.5rem}\nh1{font:700 clamp(2.4rem,9vw,4.6rem)/1.02 var(--serif);margin:0;letter-spacing:-.01em;max-width:14ch}\n.hero p.lead{margin:0;max-width:34ch;color:#c5dadb;font-size:1.15rem}\n.cta{display:inline-block;background:var(--buoy);color:#fff;font-weight:700;font-size:1.2rem;padding:1.05rem 1.6rem;border-radius:.4rem;text-decoration:none;min-height:3.25rem}\n.cta:hover{background:#b9351f}\n.chart{background:#0f3340;border:1px solid #27505e;border-radius:.5rem;padding:1rem 1rem .5rem}\n.chart .now{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.25rem .75rem;margin-bottom:.25rem}\n.chart .now strong{font:700 2.2rem var(--serif)}\n.chart .now span{color:#9fc3c6;font-size:.95rem}\nsvg{display:block;width:100%;height:auto}\n.chart .cap{font-size:.85rem;color:#9fc3c6;margin:.25rem 0 .5rem}\n@media(min-width:56rem){.hero .wrap{grid-template-columns:1fr 1.25fr;align-items:end;gap:3rem}.hero{padding-bottom:3.5rem}}\nsection{padding:3rem 0}\nh2{font:700 clamp(1.7rem,5vw,2.4rem)/1.1 var(--serif);margin:0 0 1rem}\n.times{display:grid;gap:0;border-top:2px solid var(--ink);margin:0;padding:0;list-style:none}\n.times li{display:grid;grid-template-columns:5.5rem 1fr auto;gap:.75rem;align-items:baseline;padding:.8rem 0;border-bottom:1px solid #a9bfbd}\n.times .t{font:700 1.4rem var(--serif);font-variant-numeric:tabular-nums}\n.times .h{font-variant-numeric:tabular-nums;font-weight:600}\n.times .k{color:var(--muted)}\n.two{display:grid;gap:2rem}\n@media(min-width:48rem){.two{grid-template-columns:1fr 1fr;gap:4rem}}\n.safety{background:var(--white)}\n.safety ul{margin:0;padding:0;list-style:none}\n.safety li{padding:.9rem 0 .9rem 1.1rem;border-left:4px solid var(--sea);margin-bottom:.75rem}\n.safety li.warn{border-color:var(--buoy)}\n.safety b{display:block}\np{max-width:60ch}\nfooter{background:var(--deep);color:#b5cfd1;padding:2rem 0;font-size:.95rem}\nfooter p{margin:.25rem 0}\n.hero h1,.chart .curve{animation:rise 1.6s ease-out both}\n.chart .dot{animation:pulse 2.4s ease-in-out infinite}\n@keyframes rise{from{opacity:.2}to{opacity:1}}\n@keyframes pulse{50%{r:11;opacity:.55}}\n@media(prefers-reduced-motion:reduce){*{animation:none!important}}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n <div class=\"wrap\">\n  <header class=\"top\" style=\"grid-column:1/-1\">\n   <a class=\"brand\" href=\"#\">Tidewater</a>\n   <a class=\"small\" href=\"#safety\">Safety notes</a>\n  </header>\n  <div>\n   <h1>Know the water before you cast off.</h1>\n   <p class=\"lead\" style=\"margin:1rem 0 1.5rem\">Tide times for Port Aird harbour, kept by people who launch from the same slip you do.</p>\n   <a class=\"cta\" href=\"#today\">See today's tides</a>\n  </div>\n  <figure class=\"chart\" style=\"margin:0\" aria-label=\"Sample tide curve for Port Aird: high water 06:42 at 4.8 metres, low water 12:55 at 0.9 metres, high water 19:08 at 5.1 metres\">\n   <div class=\"now\"><strong>Rising, 3.2 m</strong><span>Example chart</span></div>\n   <svg viewBox=\"0 0 400 190\" role=\"img\" aria-hidden=\"true\">\n    <g stroke=\"#27505e\" stroke-width=\"1\"><line x1=\"0\" y1=\"40\" x2=\"400\" y2=\"40\"/><line x1=\"0\" y1=\"90\" x2=\"400\" y2=\"90\"/><line x1=\"0\" y1=\"140\" x2=\"400\" y2=\"140\"/></g>\n    <path class=\"curve\" d=\"M0 118 C40 60,70 28,100 28 S160 150,205 152 S270 24,310 24 S370 110,400 130 L400 190 L0 190Z\" fill=\"#1d5663\" opacity=\".75\"/>\n    <path class=\"curve\" d=\"M0 118 C40 60,70 28,100 28 S160 150,205 152 S270 24,310 24 S370 110,400 130\" fill=\"none\" stroke=\"#8fd0d4\" stroke-width=\"3\"/>\n    <line x1=\"150\" y1=\"0\" x2=\"150\" y2=\"190\" stroke=\"#d2412b\" stroke-width=\"2\" stroke-dasharray=\"4 4\"/>\n    <circle class=\"dot\" cx=\"150\" cy=\"106\" r=\"8\" fill=\"#d2412b\"/>\n    <g fill=\"#c5dadb\" font-size=\"11\" font-family=\"system-ui,sans-serif\"><text x=\"78\" y=\"18\">High 06:42</text><text x=\"178\" y=\"174\">Low 12:55</text><text x=\"288\" y=\"14\">High 19:08</text></g>\n   </svg>\n   <p class=\"cap\">Heights in metres above chart datum.</p>\n  </figure>\n </div>\n</div>\n\n<main>\n<section id=\"today\">\n <div class=\"wrap two\">\n  <div>\n   <h2>Today at Port Aird</h2>\n   <p>High and low water, with the height at each. Times are local. The harbour bar is only safe to cross on a rising tide above 2.5 metres.</p>\n  </div>\n  <ul class=\"times\" aria-label=\"Example tide times\">\n   <li><span class=\"t\">06:42</span><span class=\"h\">High water</span><span class=\"k\">4.8 m</span></li>\n   <li><span class=\"t\">12:55</span><span class=\"h\">Low water</span><span class=\"k\">0.9 m</span></li>\n   <li><span class=\"t\">19:08</span><span class=\"h\">High water</span><span class=\"k\">5.1 m</span></li>\n   <li><span class=\"t\">01:20</span><span class=\"h\">Low water, tomorrow</span><span class=\"k\">0.8 m</span></li>\n  </ul>\n </div>\n</section>\n\n<section class=\"safety\" id=\"safety\">\n <div class=\"wrap two\">\n  <div>\n   <h2>Notes from the harbour</h2>\n   <p>Short, dated updates from the volunteers who watch the harbour. Each one says when it was written and who wrote it.</p>\n  </div>\n  <ul>\n   <li class=\"warn\"><b>Slip is slick below half tide</b>Weed on the lower third. Wear boots with grip.</li>\n   <li><b>Mooring buoys 4 to 7 re-laid</b>Check your pick-up line is long enough at high water.</li>\n   <li><b>Lifejacket swap shelf</b>Spare lifejackets are in the blue box by the harbour office. Take one, return it.</li>\n  </ul>\n </div>\n</section>\n\n<section>\n <div class=\"wrap two\">\n  <div>\n   <h2>Built for the dock</h2>\n  </div>\n  <div>\n   <p>Big numbers, high contrast, and no sign-up. It loads on a weak signal and works in sun glare with wet hands.</p>\n   <p>Tidewater is run by volunteers and costs nothing to use. Predictions come from local gauge records; always look at the water as well.</p>\n   <p><a class=\"cta\" href=\"#today\">See today's tides</a></p>\n  </div>\n </div>\n</section>\n</main>\n<footer><div class=\"wrap\"><p>Tidewater, a community project for Port Aird.</p><p>In an emergency call 999 and ask for the Coastguard.</p></div></footer>\n</body>\n</html>\n"
+     }
+    },
+    "case-2": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "no_all_caps_labels": true,
+      "no_arrow_suffix": true,
+      "no_middot_meta": true,
+      "no_default_palette": true,
+      "no_default_shadow": true,
+      "keyboard_focus": true,
+      "reduced_motion": true,
+      "responsive": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Ledgerly – bookkeeping for independent bakeries</title>\n<meta name=\"description\" content=\"Ledgerly matches your card payments to your bank deposits so you don't have to. Try it free for 30 days.\">\n<style>\n:root{\n  --bg:#eef2f5; --ink:#18243f; --navy:#18243f; --green:#1f7a56; --greenbg:#dcefe5; --gold:#c9902c; --white:#fff; --muted:#4f5d75; --line:#c8d1dc;\n  --slab:Rockwell,\"Roboto Slab\",\"Zilla Slab\",\"Courier New\",Georgia,serif;\n  --sans:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;\n  --mono:ui-monospace,\"SF Mono\",Menlo,Consolas,monospace;\n}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--bg);color:var(--ink);font:1.0625rem/1.6 var(--sans)}\n:focus-visible{outline:3px solid var(--gold);outline-offset:3px}\n.wrap{max-width:66rem;margin:0 auto;padding:0 1.25rem}\nnav{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 0}\n.brand{font:700 1.4rem var(--slab);text-decoration:none;color:var(--ink)}\n.btn{display:inline-block;background:var(--navy);color:#fff;font-weight:700;text-decoration:none;padding:.95rem 1.5rem;border-radius:.3rem;min-height:3rem;border-bottom:4px solid var(--gold)}\n.btn:hover{background:#0f1830}\n.btn.sm{padding:.55rem 1rem;min-height:0;font-size:.95rem;border-bottom-width:3px}\n.hero{display:grid;gap:2.5rem;padding:1.5rem 0 4rem}\nh1{font:700 clamp(2.3rem,8vw,4.2rem)/1.05 var(--slab);margin:0 0 1.25rem;letter-spacing:-.015em}\n.lead{font-size:1.2rem;max-width:34rem;margin:0 0 1.75rem}\n.fine{color:var(--muted);font-size:.95rem;margin:.9rem 0 0}\n.slip{background:var(--white);font-family:var(--mono);font-size:.9rem;padding:1.4rem 1.25rem 2rem;box-shadow:0 1px 0 var(--line),0 12px 30px -14px rgba(24,36,63,.35);\n --t:12px;-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%;\n transform:rotate(1deg);max-width:26rem}\n.slip h2{font:700 1.05rem var(--mono);margin:0 0 .15rem}\n.slip .sub{color:var(--muted);margin:0 0 1rem}\n.slip table{width:100%;border-collapse:collapse}\n.slip td{padding:.3rem 0;border-bottom:1px dashed var(--line)}\n.slip td:last-child{text-align:right}\n.slip .ok{color:var(--green)}\n.slip .tot td{border-bottom:0;border-top:2px solid var(--ink);font-weight:700;padding-top:.6rem}\n.slip .done{margin-top:1rem;background:var(--greenbg);color:#14553b;padding:.7rem .8rem;font-weight:700;font-family:var(--sans)}\n@media(min-width:56rem){.hero{grid-template-columns:1.2fr 1fr;align-items:center;padding:3rem 0 5rem}}\nsection.band{background:var(--navy);color:#fff;padding:4rem 0}\nsection.plain{padding:4rem 0}\nh2.big{font:700 clamp(1.7rem,5vw,2.5rem)/1.1 var(--slab);margin:0 0 1.5rem}\n.cols{display:grid;gap:2rem}\n@media(min-width:50rem){.cols{grid-template-columns:repeat(3,1fr);gap:2.5rem}}\n.cols h3{font:700 1.2rem var(--slab);margin:0 0 .4rem}\n.cols p{margin:0;max-width:30rem}\n.band .cols p{color:#d3dbe8}\n.band h3{color:#f1c76f}\n.steps{display:grid;gap:1.5rem;max-width:44rem;margin:0;padding:0;list-style:none;counter-reset:s}\n.steps li{counter-increment:s;padding-left:3.2rem;position:relative}\n.steps li::before{content:counter(s);position:absolute;left:0;top:-.1rem;width:2.2rem;height:2.2rem;border-radius:50%;background:var(--gold);color:var(--ink);font:700 1.1rem/2.2rem var(--slab);text-align:center}\n.steps b{display:block;font-family:var(--slab);font-size:1.15rem}\n.final{background:var(--white);border-top:4px solid var(--gold);padding:4rem 0;text-align:left}\n.final p{max-width:34rem}\nfooter{padding:1.5rem 0;color:var(--muted);font-size:.9rem}\n.slip{animation:in .9s ease-out both}\n@keyframes in{from{opacity:0;transform:translateY(14px) rotate(1deg)}}\n@media(prefers-reduced-motion:reduce){.slip{animation:none}}\n</style>\n</head>\n<body>\n<div class=\"wrap\">\n <nav><a class=\"brand\" href=\"#\">Ledgerly</a><a class=\"btn sm\" href=\"#trial\">Start free trial</a></nav>\n <header class=\"hero\">\n  <div>\n   <h1>Your card payments, matched before the first loaf is out.</h1>\n   <p class=\"lead\">Ledgerly reads your card sales and your bank deposits overnight, matches them, and tells you only what doesn't add up.</p>\n   <a class=\"btn\" href=\"#trial\">Start your 30-day free trial</a>\n   <p class=\"fine\">No card needed to start. Cancel any time.</p>\n  </div>\n  <div class=\"slip\" role=\"img\" aria-label=\"Example morning report: 47 card payments from Tuesday matched to a bank deposit of £612.40, with one fee difference flagged for review\">\n   <h2>Tuesday's card sales</h2>\n   <p class=\"sub\">Checked 04:58 this morning</p>\n   <table aria-hidden=\"true\">\n    <tr><td>Counter, 47 payments</td><td>£641.20</td></tr>\n    <tr><td>Card fees</td><td>−£11.54</td></tr>\n    <tr><td>Refund, sourdough</td><td>−£17.26</td></tr>\n    <tr class=\"tot\"><td>Bank deposit</td><td class=\"ok\">£612.40 ✓</td></tr>\n   </table>\n   <p class=\"done\" aria-hidden=\"true\">Everything matches. Nothing to do.</p>\n  </div>\n </header>\n</div>\n\n<section class=\"band\">\n <div class=\"wrap\">\n  <h2 class=\"big\">What it does while you bake</h2>\n  <div class=\"cols\">\n   <div><h3>Reconciles card payments</h3><p>Each day's sales are matched to the deposit that lands in your bank, including fees and refunds.</p></div>\n   <div><h3>Flags only the odd one out</h3><p>If a deposit is short, you get one line saying which day and by how much.</p></div>\n   <div><h3>Keeps the books tidy</h3><p>Wholesale invoices, flour bills and wages sit in one place, ready for your accountant.</p></div>\n  </div>\n </div>\n</section>\n\n<section class=\"plain\">\n <div class=\"wrap\">\n  <h2 class=\"big\">Set up before your next shift</h2>\n  <ol class=\"steps\">\n   <li><b>Connect your card provider</b>Sign in once. Ledgerly only reads your sales.</li>\n   <li><b>Connect your bank</b>Read-only access. We can't move money.</li>\n   <li><b>Read your first report</b>Tomorrow morning, it's waiting on your phone.</li>\n  </ol>\n </div>\n</section>\n\n<section class=\"final\" id=\"trial\">\n <div class=\"wrap\">\n  <h2 class=\"big\">Try Ledgerly free for 30 days</h2>\n  <p>See a full month of card payments reconciled for you. If it isn't saving you time, walk away.</p>\n  <a class=\"btn\" href=\"mailto:hello@ledgerly.example?subject=Start%20my%2030-day%20trial\">Start your 30-day free trial</a>\n </div>\n</section>\n<footer><div class=\"wrap\">Ledgerly, bookkeeping for independent bakeries.</div></footer>\n</body>\n</html>\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "no_all_caps_labels": true,
+      "no_arrow_suffix": true,
+      "no_middot_meta": true,
+      "no_default_palette": true,
+      "no_default_shadow": true,
+      "keyboard_focus": true,
+      "reduced_motion": true,
+      "responsive": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Fernhill Reading Room – lending library in the old station</title>\n<meta name=\"description\" content=\"A volunteer-run lending library in a converted railway station. Open Tuesday to Saturday, 10:00 to 17:00.\">\n<style>\n:root{\n  --green:#1d4a39; --deep:#133327; --white:#f9faf7; --lamp:#f2b632; --ink:#1b2a23; --paper:#e9ece4; --muted:#51635a;\n  --sans:\"Gill Sans\",\"Gill Sans MT\",Optima,Candara,\"Trebuchet MS\",system-ui,sans-serif;\n}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--white);color:var(--ink);font:1.125rem/1.6 var(--sans)}\n:focus-visible{outline:3px solid var(--lamp);outline-offset:3px}\n.wrap{max-width:60rem;margin:0 auto;padding:0 1.25rem}\n.hero{background:var(--green);color:var(--white);padding:2rem 0 3rem}\n.name{margin:0 0 2rem;font-size:1.1rem;font-weight:600;letter-spacing:.02em}\nh1{font:600 clamp(2.4rem,9vw,4.8rem)/1 var(--sans);margin:0 0 1.25rem;letter-spacing:-.02em;max-width:13ch}\n.lead{max-width:32rem;margin:0 0 2rem;color:#d4e3da}\n.board{background:var(--deep);border:3px solid #0a1f17;border-radius:.4rem;padding:.5rem 1rem;font-variant-numeric:tabular-nums;max-width:36rem}\n.board h2{font-size:1rem;font-weight:600;color:var(--lamp);margin:.5rem 0 .25rem}\n.board dl{margin:0}\n.row{display:grid;grid-template-columns:5.5rem 1fr;gap:.5rem;padding:.55rem 0;border-top:1px solid #2d5a47;font-size:1.2rem}\n.row dt{font-weight:600}\n.row dd{margin:0;color:var(--lamp);font-weight:600}\n.row.off dd{color:#8fa99b;font-weight:400}\n.row.off dt{color:#8fa99b}\n.btn{display:inline-block;background:var(--lamp);color:#1b1b10;font-weight:700;text-decoration:none;padding:.9rem 1.5rem;border-radius:.3rem;font-size:1.1rem;min-height:3rem;border:0;cursor:pointer;font-family:inherit}\n.btn:hover{background:#ffc94d}\n.hero .btn{margin-top:1.75rem}\nsection{padding:3.5rem 0}\nh2.s{font:600 clamp(1.7rem,5vw,2.4rem)/1.1 var(--sans);margin:0 0 1rem;letter-spacing:-.01em}\np{max-width:36rem}\n.about{display:grid;gap:2rem}\n@media(min-width:50rem){.about{grid-template-columns:1fr 1fr;gap:4rem}}\n.facts{margin:0;padding:0;list-style:none}\n.facts li{padding:.75rem 0;border-bottom:1px solid #c9d0c6}\n.facts li:first-child{border-top:1px solid #c9d0c6}\n.join{background:var(--paper)}\n.ticket{background:var(--white);border:2px solid var(--green);border-radius:.5rem;max-width:38rem;display:grid;position:relative;overflow:hidden}\n.ticket .head{background:var(--green);color:var(--white);padding:.8rem 1.25rem;font-weight:600}\n.ticket form{padding:1.25rem;display:grid;gap:1rem}\nlabel{display:grid;gap:.3rem;font-weight:600;font-size:1rem}\ninput,select{font:inherit;padding:.7rem .75rem;border:2px solid #7d8f85;border-radius:.3rem;background:#fff;color:var(--ink);min-height:3rem}\ninput:focus-visible,select:focus-visible{outline-offset:1px;border-color:var(--green)}\n.hint{font-weight:400;color:var(--muted);font-size:.95rem}\n.ticket .btn{background:var(--green);color:#fff;justify-self:start}\n.ticket .btn:hover{background:var(--deep)}\n.find{display:grid;gap:.25rem}\nfooter{background:var(--deep);color:#c3d5ca;padding:2rem 0;font-size:1rem}\nfooter p{margin:.2rem 0}\n.row{animation:flip .6s ease-out both}\n.row:nth-child(2){animation-delay:.1s}.row:nth-child(3){animation-delay:.2s}.row:nth-child(4){animation-delay:.3s}.row:nth-child(5){animation-delay:.4s}\n@keyframes flip{from{opacity:0;transform:translateY(-6px)}}\n@media(prefers-reduced-motion:reduce){.row{animation:none}}\n</style>\n</head>\n<body>\n<header class=\"hero\">\n <div class=\"wrap\">\n  <p class=\"name\">Fernhill Reading Room</p>\n  <h1>Borrow a book at the old station.</h1>\n  <p class=\"lead\">A lending library run by volunteers in Fernhill's former railway station. Come in, browse the shelves and take something home.</p>\n  <div class=\"board\" role=\"region\" aria-label=\"Opening hours\">\n   <h2>Opening hours</h2>\n   <dl>\n    <div class=\"row\"><dt>Tue–Sat</dt><dd>10:00–17:00</dd></div>\n    <div class=\"row off\"><dt>Sun</dt><dd>Closed</dd></div>\n    <div class=\"row off\"><dt>Mon</dt><dd>Closed</dd></div>\n   </dl>\n  </div>\n  <a class=\"btn\" href=\"#join\">Become a member</a>\n </div>\n</header>\n\n<main>\n<section>\n <div class=\"wrap about\">\n  <div>\n   <h2 class=\"s\">Housed in the booking hall</h2>\n   <p>The shelves stand where the ticket windows used to be, and the waiting room is now the reading room. Sit by the stove, or borrow a book and read it at home.</p>\n  </div>\n  <ul class=\"facts\">\n   <li>Members borrow books to take home.</li>\n   <li>Everyone is welcome to read in the building.</li>\n   <li>Run entirely by volunteers.</li>\n  </ul>\n </div>\n</section>\n\n<section class=\"join\" id=\"join\">\n <div class=\"wrap\">\n  <h2 class=\"s\">Become a member</h2>\n  <p>Tell us who you are and we'll have your card ready. Collect it at the desk on your next visit, Tuesday to Saturday.</p>\n  <div class=\"ticket\">\n   <div class=\"head\">Membership application</div>\n   <form action=\"mailto:hello@fernhillreadingroom.example\" method=\"post\" enctype=\"text/plain\">\n    <label>Full name<input name=\"name\" autocomplete=\"name\" required></label>\n    <label>Email address<input type=\"email\" name=\"email\" autocomplete=\"email\" required></label>\n    <label>Phone number <span class=\"hint\">Optional</span><input type=\"tel\" name=\"phone\" autocomplete=\"tel\"></label>\n    <button class=\"btn\" type=\"submit\">Send application</button>\n   </form>\n  </div>\n </div>\n</section>\n</main>\n<footer><div class=\"wrap\"><p>Fernhill Reading Room, the old railway station.</p><p>Open Tuesday to Saturday, 10:00–17:00.</p></div></footer>\n</body>\n</html>\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}

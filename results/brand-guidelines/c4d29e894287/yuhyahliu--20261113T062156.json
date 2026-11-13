@@ -1,0 +1,180 @@
+{
+ "schema": 1,
+ "skill": "brand-guidelines",
+ "version": "c4d29e894287",
+ "author": "anthropics",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:21:56+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:20:45+00:00",
+   "usage": {
+    "total_tokens": 140766,
+    "input_tokens": 8,
+    "output_tokens": 4035,
+    "cache_write_tokens": 9171,
+    "cache_read_tokens": 127552,
+    "cost_usd": 0.0898052,
+    "turns": 8,
+    "duration_ms": 27108,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32768,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4716,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0217126,
+    "turns": 1,
+    "duration_ms": 2310,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 3,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "brand_colours_only": true,
+      "uses_the_palette": true,
+      "heading_font": true,
+      "body_font": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Hack Week 2026</title>\n<style>\n:root{--dark:#141413;--light:#faf9f5;--mid:#b0aea5;--lg:#e8e6dc;--orange:#d97757;--blue:#6a9bcc;--green:#788c5d}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--light);color:var(--dark);font-family:Lora,Georgia,serif;font-size:18px;line-height:1.6}\nh1,h2,h3,.label{font-family:Poppins,Arial,sans-serif}\nmain{max-width:760px;margin:0 auto;padding:64px 24px}\n.label{text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--orange)}\nh1{font-size:56px;line-height:1.1;margin:8px 0 16px}\n.lead{font-size:21px;margin-bottom:40px}\n.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}\n.card{background:var(--lg);padding:24px;border-top:4px solid var(--orange)}\n.card:nth-child(2){border-color:var(--blue)}.card:nth-child(3){border-color:var(--green)}\n.card h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px;font-weight:600}\n.card p{margin:0;font-size:20px}\n.cta{margin-top:40px;background:var(--dark);color:var(--light);padding:32px;text-align:center}\n.cta p{margin:0;font-size:20px}.cta strong{color:var(--orange);font-family:Poppins,Arial,sans-serif}\n@media(max-width:480px){h1{font-size:38px}}\n</style></head><body><main>\n<div class=\"label\">Internal event</div>\n<h1>Hack Week 2026</h1>\n<p class=\"lead\">A week to build, explore, and try the ideas you never had time for. Join us for five days of hacking, ending with demos for everyone.</p>\n<div class=\"cards\">\n<div class=\"card\"><h2>When</h2><p>December 1–5, 2026</p></div>\n<div class=\"card\"><h2>Demos</h2><p>Friday at 3pm, main hall</p></div>\n<div class=\"card\"><h2>Sign up by</h2><p>November 24</p></div>\n</div>\n<div class=\"cta\"><p>Sign up by <strong>November 24</strong> to take part.</p></div>\n</main></body></html>\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "brand_colours_only": false,
+      "uses_the_palette": true,
+      "heading_font": true,
+      "body_font": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Pricing</title>\n<style>\n:root{--dark:#141413;--light:#faf9f5;--mid:#b0aea5;--lg:#e8e6dc;--orange:#d97757;--blue:#6a9bcc;--green:#788c5d}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--light);color:var(--dark);font-family:Lora,Georgia,serif;font-size:17px;line-height:1.6}\nh1,h2,.price,.btn{font-family:Poppins,Arial,sans-serif}\nmain{max-width:960px;margin:0 auto;padding:64px 24px}\nh1{text-align:center;font-size:44px;margin:0 0 8px}\n.sub{text-align:center;margin:0 0 48px;color:#5c5b55}\n.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}\n.plan{background:#fff;border:1px solid var(--lg);border-top:4px solid var(--blue);padding:32px;display:flex;flex-direction:column}\n.plan.team{border-top-color:var(--orange);background:var(--lg)}\n.plan.ent{border-top-color:var(--green)}\nh2{font-size:20px;margin:0 0 12px}\n.price{font-size:40px;font-weight:600;margin:0}\n.price small{font-size:15px;font-weight:400;color:#5c5b55}\n.plan p.d{margin:12px 0 24px;flex:1}\n.btn{display:block;text-align:center;padding:12px;background:var(--dark);color:var(--light);text-decoration:none;font-weight:500}\n.team .btn{background:var(--orange);color:var(--dark)}\n@media(max-width:480px){h1{font-size:32px}}\n</style></head><body><main>\n<h1>Simple pricing</h1>\n<p class=\"sub\">Pick the plan that fits how you work.</p>\n<div class=\"plans\">\n<section class=\"plan\"><h2>Starter</h2><p class=\"price\">$0</p><p class=\"d\">1 project</p><a class=\"btn\" href=\"#\">Get started</a></section>\n<section class=\"plan team\"><h2>Team</h2><p class=\"price\">$25 <small>per seat</small></p><p class=\"d\">Unlimited projects</p><a class=\"btn\" href=\"#\">Choose Team</a></section>\n<section class=\"plan ent\"><h2>Enterprise</h2><p class=\"price\">Contact us</p><p class=\"d\">Talk to us about your needs.</p><a class=\"btn\" href=\"#\">Contact us</a></section>\n</div></main></body></html>\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "brand_colours_only": true,
+      "uses_the_palette": true,
+      "heading_font": true,
+      "body_font": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>The Monthly Note</title>\n<style>\n:root{--dark:#141413;--light:#faf9f5;--mid:#b0aea5;--lg:#e8e6dc;--orange:#d97757;--blue:#6a9bcc;--green:#788c5d}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--light);color:var(--dark);font-family:Lora,Georgia,serif;font-size:18px;line-height:1.6}\nh1,h2{font-family:Poppins,Arial,sans-serif}\nheader{background:var(--dark);color:var(--light);padding:56px 24px;border-bottom:6px solid var(--orange)}\nheader div,main{max-width:700px;margin:0 auto}\nh1{margin:0;font-size:48px;line-height:1.1}\nmain{padding:40px 24px 64px}\narticle{padding:24px 0;border-bottom:1px solid var(--lg)}\narticle:last-child{border:0}\nh2{font-size:22px;margin:0 0 4px}\narticle:nth-child(1) h2{color:var(--orange)}\narticle:nth-child(2) h2{color:var(--blue)}\narticle:nth-child(3) h2{color:var(--green)}\np{margin:0}\n@media(max-width:480px){h1{font-size:34px}}\n</style></head><body>\n<header><div><h1>The Monthly Note</h1></div></header>\n<main>\n<article><h2>Tokyo office opens</h2><p>Our Tokyo office opens in January.</p></article>\n<article><h2>New expense tool</h2><p>The new expense tool goes live on December 8.</p></article>\n<article><h2>New hires</h2><p>Welcome to 12 new hires.</p></article>\n</main></body></html>\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:21:22+00:00",
+   "usage": {
+    "total_tokens": 177631,
+    "input_tokens": 12,
+    "output_tokens": 4546,
+    "cache_write_tokens": 10532,
+    "cache_read_tokens": 162541,
+    "cost_usd": 0.10386609999999999,
+    "turns": 10,
+    "duration_ms": 30768,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32856,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4804,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0220646,
+    "turns": 1,
+    "duration_ms": 2027,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 3,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "brand_colours_only": false,
+      "uses_the_palette": true,
+      "heading_font": true,
+      "body_font": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Hack Week 2026</title>\n<style>\n:root{--dark:#141413;--light:#faf9f5;--mid:#b0aea5;--lgray:#e8e6dc;--orange:#d97757;--blue:#6a9bcc;--green:#788c5d}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--light);color:var(--dark);font-family:Lora,Georgia,serif;font-size:18px;line-height:1.6}\nh1,h2,h3{font-family:Poppins,Arial,sans-serif;line-height:1.2;margin:0}\nmain{max-width:820px;margin:0 auto;padding:48px 20px}\n.hero{background:var(--dark);color:var(--light);padding:48px 32px;border-radius:12px;border-bottom:8px solid var(--orange)}\n.eyebrow{font-family:Poppins,Arial,sans-serif;text-transform:uppercase;letter-spacing:.12em;font-size:14px;color:var(--orange);margin:0 0 12px}\nh1{font-size:clamp(36px,7vw,56px);font-weight:600}\n.hero p{margin:16px 0 0;color:var(--lgray)}\n.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:32px 0}\n.card{background:var(--lgray);border-radius:10px;padding:24px;border-top:6px solid var(--orange)}\n.card:nth-child(2){border-color:var(--blue)}.card:nth-child(3){border-color:var(--green)}\n.card h2{font-size:14px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}\n.card p{margin:0;font-size:20px}\n.cta{background:var(--orange);color:var(--dark);border-radius:10px;padding:28px 32px}\n.cta h2{font-size:24px;margin-bottom:6px}.cta p{margin:0}\nfooter{margin-top:32px;color:#5e5d59;font-size:15px}\n</style>\n</head>\n<body>\n<main>\n  <section class=\"hero\">\n    <p class=\"eyebrow\">Internal announcement</p>\n    <h1>Hack Week 2026</h1>\n    <p>Build something new, together. Five days, your ideas, the whole company invited.</p>\n  </section>\n  <section class=\"cards\">\n    <div class=\"card\"><h2>When</h2><p>December 1–5, 2026</p></div>\n    <div class=\"card\"><h2>Demos</h2><p>Friday, 3pm<br>Main hall</p></div>\n    <div class=\"card\"><h2>Sign up by</h2><p>November 24</p></div>\n  </section>\n  <section class=\"cta\">\n    <h2>Sign up by November 24</h2>\n    <p>Then join us Friday at 3pm in the main hall to see what everyone built.</p>\n  </section>\n  <footer>Hack Week · December 1–5, 2026</footer>\n</main>\n</body>\n</html>\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "brand_colours_only": false,
+      "uses_the_palette": true,
+      "heading_font": true,
+      "body_font": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Pricing</title>\n<style>\n:root{--dark:#141413;--light:#faf9f5;--mid:#b0aea5;--lgray:#e8e6dc;--orange:#d97757;--blue:#6a9bcc;--green:#788c5d}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--light);color:var(--dark);font-family:Lora,Georgia,serif;font-size:18px;line-height:1.6}\nh1,h2,.price{font-family:Poppins,Arial,sans-serif}\nmain{max-width:1000px;margin:0 auto;padding:56px 20px}\nheader{text-align:center;margin-bottom:40px}\nh1{font-size:clamp(32px,6vw,48px);margin:0 0 8px;font-weight:600}\nheader p{margin:0;color:#5e5d59}\n.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;align-items:stretch}\n.plan{background:var(--lgray);border-radius:12px;padding:32px 26px;border-top:8px solid var(--blue);display:flex;flex-direction:column}\n.plan.team{border-color:var(--orange);background:var(--dark);color:var(--light)}\n.plan.ent{border-color:var(--green)}\nh2{font-size:24px;margin:0 0 12px;font-weight:600}\n.price{font-size:44px;font-weight:600;line-height:1.1;margin:0}\n.unit{font-size:16px;font-weight:400}\n.plan ul{list-style:none;padding:0;margin:20px 0 28px;flex:1}\n.plan li{padding:8px 0;border-top:1px solid var(--mid)}\n.btn{display:block;text-align:center;text-decoration:none;font-family:Poppins,Arial,sans-serif;font-weight:600;font-size:16px;padding:12px;border-radius:8px;background:var(--dark);color:var(--light)}\n.team .btn{background:var(--orange);color:var(--dark)}\n.btn:focus-visible,.btn:hover{outline:3px solid var(--orange);outline-offset:2px}\n</style>\n</head>\n<body>\n<main>\n  <header>\n    <h1>Simple pricing</h1>\n    <p>Pick the plan that fits your team.</p>\n  </header>\n  <div class=\"plans\">\n    <section class=\"plan\">\n      <h2>Starter</h2>\n      <p class=\"price\">$0</p>\n      <ul><li>1 project</li></ul>\n      <a class=\"btn\" href=\"#\">Get started</a>\n    </section>\n    <section class=\"plan team\">\n      <h2>Team</h2>\n      <p class=\"price\">$25 <span class=\"unit\">per seat</span></p>\n      <ul><li>Unlimited projects</li></ul>\n      <a class=\"btn\" href=\"#\">Choose Team</a>\n    </section>\n    <section class=\"plan ent\">\n      <h2>Enterprise</h2>\n      <p class=\"price\" style=\"font-size:32px\">Contact us</p>\n      <ul><li>Talk to us about your needs</li></ul>\n      <a class=\"btn\" href=\"#\">Contact us</a>\n    </section>\n  </div>\n</main>\n</body>\n</html>\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "brand_colours_only": true,
+      "uses_the_palette": true,
+      "heading_font": true,
+      "body_font": true,
+      "content": true
+     },
+     "outputs": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>The Monthly Note</title>\n<style>\n:root{--dark:#141413;--light:#faf9f5;--mid:#b0aea5;--lgray:#e8e6dc;--orange:#d97757;--blue:#6a9bcc;--green:#788c5d}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--light);color:var(--dark);font-family:Lora,Georgia,serif;font-size:19px;line-height:1.65}\nh1,h2{font-family:Poppins,Arial,sans-serif;line-height:1.2}\nmain{max-width:680px;margin:0 auto;padding:56px 20px}\nheader{border-bottom:4px solid var(--orange);padding-bottom:20px;margin-bottom:32px}\nh1{font-size:clamp(36px,7vw,52px);margin:0;font-weight:600}\narticle{background:var(--lgray);border-left:8px solid var(--orange);border-radius:8px;padding:20px 24px;margin-bottom:16px}\narticle:nth-of-type(2){border-color:var(--blue)}\narticle:nth-of-type(3){border-color:var(--green)}\nh2{font-size:24px;margin:0 0 4px;font-weight:600}\narticle p{margin:0}\n</style>\n</head>\n<body>\n<main>\n  <header><h1>The Monthly Note</h1></header>\n  <article>\n    <h2>Tokyo office opens</h2>\n    <p>The Tokyo office opens in January.</p>\n  </article>\n  <article>\n    <h2>New expense tool</h2>\n    <p>The new expense tool goes live on December 8.</p>\n  </article>\n  <article>\n    <h2>New hires</h2>\n    <p>Welcome to 12 new hires.</p>\n  </article>\n</main>\n</body>\n</html>\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}

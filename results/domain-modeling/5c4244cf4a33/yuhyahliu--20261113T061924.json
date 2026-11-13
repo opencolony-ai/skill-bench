@@ -1,0 +1,198 @@
+{
+ "schema": 1,
+ "skill": "domain-modeling",
+ "version": "5c4244cf4a33",
+ "author": "mattpocock",
+ "claude_code": "2.1.323 (Claude Code)",
+ "model_requested": "sonnet",
+ "os": "Linux",
+ "finished": "2026-11-13T06:19:24+00:00",
+ "arms": {
+  "none": {
+   "started": "2026-11-13T06:18:46+00:00",
+   "usage": {
+    "total_tokens": 138568,
+    "input_tokens": 8,
+    "output_tokens": 2002,
+    "cache_write_tokens": 8024,
+    "cache_read_tokens": 128534,
+    "cost_usd": 0.0649854,
+    "turns": 11,
+    "duration_ms": 15143,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32775,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4723,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.0217406,
+    "turns": 1,
+    "duration_ms": 2691,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 6,
+    "Write": 3
+   },
+   "skill_used": false,
+   "cases": {
+    "case-1": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "context_title": true,
+      "language_section": false,
+      "term_entries": false,
+      "settled_terms_defined": true,
+      "avoid_lists": false,
+      "tight_definitions": false,
+      "no_general_terms": true,
+      "no_implementation_details": true
+     },
+     "outputs": {
+      "GLOSSARY.md": "# Glossary\n\n| Term | Definition | Avoid |\n|------|------------|-------|\n| **Shipment** | What leaves the warehouse for one customer address. | delivery, parcel |\n| **Package** | One physical box. A shipment holds one or more packages. | box, carton |\n| **Carrier** | The company that moves a shipment (UPS, DHL, ...). | courier, shipper |\n"
+     }
+    },
+    "case-2": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "context_title": true,
+      "language_section": false,
+      "term_entries": false,
+      "settled_terms_defined": true,
+      "avoid_lists": false,
+      "tight_definitions": false,
+      "no_general_terms": true,
+      "no_implementation_details": true
+     },
+     "outputs": {
+      "GLOSSARY.md": "# Glossary\n\n| Term | Definition | Avoid |\n|------|------------|-------|\n| **Appointment** | A patient's reserved time with one practitioner. | booking, visit |\n| **Slot** | A period a practitioner has made available; it may or may not hold an appointment. | opening, availability |\n| **Patient** | The person being seen. | client, customer |\n| **Practitioner** | Anyone who sees patients (doctors, nurses, physios). | doctor, provider (for the general role) |\n"
+     }
+    },
+    "case-3": {
+     "pass": false,
+     "checks": {
+      "exists": true,
+      "context_title": true,
+      "language_section": false,
+      "term_entries": false,
+      "settled_terms_defined": true,
+      "avoid_lists": false,
+      "tight_definitions": false,
+      "no_general_terms": true,
+      "no_implementation_details": true
+     },
+     "outputs": {
+      "GLOSSARY.md": "# Glossary\n\n| Term | Definition | Avoid |\n|------|------------|-------|\n| **Title** | A work in the catalogue (one ISBN). | book |\n| **Copy** | One physical item of a title that can be lent. | item, volume |\n| **Loan** | A copy lent to a member until a due date. | checkout, borrowing |\n| **Hold** | A member's claim on the next free copy of a title. | reservation, request |\n| **Member** | Someone with a library card. | patron, user |\n"
+     }
+    }
+   }
+  },
+  "skill": {
+   "started": "2026-11-13T06:19:05+00:00",
+   "usage": {
+    "total_tokens": 180454,
+    "input_tokens": 12,
+    "output_tokens": 2398,
+    "cache_write_tokens": 10685,
+    "cache_read_tokens": 167359,
+    "cost_usd": 0.0834799,
+    "turns": 14,
+    "duration_ms": 18112,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "warmup_usage": {
+    "total_tokens": 32839,
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_write_tokens": 4787,
+    "cache_read_tokens": 28046,
+    "cost_usd": 0.021996599999999998,
+    "turns": 1,
+    "duration_ms": 2422,
+    "models": [
+     "claude-sonnet-5-5"
+    ],
+    "permission_denials": 0,
+    "refused": []
+   },
+   "tools": {
+    "Glob": 1,
+    "Read": 7,
+    "Skill": 1,
+    "Write": 3
+   },
+   "skill_used": true,
+   "cases": {
+    "case-1": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "context_title": true,
+      "language_section": true,
+      "term_entries": true,
+      "settled_terms_defined": true,
+      "avoid_lists": true,
+      "tight_definitions": true,
+      "no_general_terms": true,
+      "no_implementation_details": true
+     },
+     "outputs": {
+      "GLOSSARY.md": "# Shipping\n\nShipping service: moves goods from the warehouse to customers via carriers.\n\n## Language\n\n**Shipment**:\nWhat leaves the warehouse for one customer address. Holds one or more Packages.\n_Avoid_: Delivery, parcel\n\n**Package**:\nOne physical box within a Shipment.\n_Avoid_: Box, carton\n\n**Carrier**:\nThe company that moves a Shipment (e.g. UPS, DHL).\n_Avoid_: Courier, shipper\n"
+     }
+    },
+    "case-2": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "context_title": true,
+      "language_section": true,
+      "term_entries": true,
+      "settled_terms_defined": true,
+      "avoid_lists": true,
+      "tight_definitions": true,
+      "no_general_terms": true,
+      "no_implementation_details": true
+     },
+     "outputs": {
+      "GLOSSARY.md": "# Clinic Scheduling\n\nScheduling of patient appointments with practitioners at a clinic.\n\n## Language\n\n**Appointment**:\nA patient's reserved time with one practitioner.\n_Avoid_: Booking, visit\n\n**Slot**:\nA period a practitioner has made available, which may or may not hold an Appointment.\n_Avoid_: Opening, availability\n\n**Patient**:\nThe person being seen.\n_Avoid_: Client, customer\n\n**Practitioner**:\nAnyone who sees patients (doctors, nurses, physios).\n_Avoid_: Doctor, provider (for the general role)\n"
+     }
+    },
+    "case-3": {
+     "pass": true,
+     "checks": {
+      "exists": true,
+      "context_title": true,
+      "language_section": true,
+      "term_entries": true,
+      "settled_terms_defined": true,
+      "avoid_lists": true,
+      "tight_definitions": true,
+      "no_general_terms": true,
+      "no_implementation_details": true
+     },
+     "outputs": {
+      "GLOSSARY.md": "# Library Lending\n\nLending of physical library items to members.\n\n## Language\n\n**Title**:\nA work in the catalogue, identified by one ISBN.\n_Avoid_: Book\n\n**Copy**:\nOne physical item of a Title that can be lent.\n_Avoid_: Item, volume\n\n**Loan**:\nA Copy lent to a Member until a due date.\n_Avoid_: Checkout, borrowing\n\n**Hold**:\nA Member's claim on the next free Copy of a Title.\n_Avoid_: Reservation, request\n\n**Member**:\nSomeone with a library card.\n_Avoid_: Patron, user\n"
+     }
+    }
+   }
+  }
+ },
+ "user": "yuhyahliu"
+}
