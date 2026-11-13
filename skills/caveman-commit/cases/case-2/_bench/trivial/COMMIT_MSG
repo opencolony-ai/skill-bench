@@ -1,0 +1,3 @@
+refactor(client): rename timeout option
+
+This commit renames the timeout option to timeout_ms.

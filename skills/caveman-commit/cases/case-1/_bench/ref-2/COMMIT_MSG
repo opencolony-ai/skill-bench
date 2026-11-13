@@ -1,0 +1,5 @@
+```
+fix(cart): skip discount when cart has no coupon
+
+Fixes #214
+```

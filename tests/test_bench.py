@@ -26,7 +26,7 @@ def fake_result(user, none_ok, skill_ok, skill=SKILL, version=None):
         for i, c in enumerate(bench.case_dirs(skill)):
             out = answers(c, "ref" if i < n else "trivial")
             cases[c.name] = {"pass": i < n, "checks": {}, "outputs": out}
-        arms[arm] = {"cases": cases, "usage": {"total_tokens": 1000}}
+        arms[arm] = {"cases": cases, "usage": {"total_tokens": 1000}, "skill_used": arm == "skill"}
     return {"schema": bench.SCHEMA, "skill": skill, "version": version or bench.version(skill), "user": user,
             "finished": "2026-11-13T00:00:00+00:00", "arms": arms}
 
@@ -104,8 +104,62 @@ class Bench(unittest.TestCase):
         for _ in range(3):
             _, out = self.quiet("next", "--user", "ann")
             self.assertNotIn(SKILL + " ", out.splitlines()[0] + " ")
-        _, out = self.quiet("next", "--user", "opencolony-ai")
-        self.assertIn("Nothing needs a verifier", out)          # the author of every seed skill
+        for _ in range(3):                                      # an author is never sent to their own skills
+            _, out = self.quiet("next", "--user", "opencolony-ai")
+            pick = out.split()[0]
+            self.assertNotEqual(bench.skill_meta(pick)["author"], "opencolony-ai")
+
+    # ------------------------------------------------------------ what Claude did
+    def test_the_stream_gives_the_result_and_whether_the_skill_was_opened(self):
+        ev = [{"type": "system", "subtype": "init"},
+              {"type": "assistant", "message": {"content": [{"type": "text", "text": "hi"},
+                                                            {"type": "tool_use", "name": "Read", "input": {"file_path": "/w/case-1/task.md"}}]}},
+              {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "pr"}}]}},
+              {"type": "result", "num_turns": 3, "usage": {"input_tokens": 5}}]
+        js, tools = bench._read_stream("\n".join(json.dumps(e) for e in ev) + "\nnot json\n")
+        self.assertEqual(js["num_turns"], 3)
+        self.assertEqual(bench._tool_counts(tools), {"Read": 1, "Skill": 1})
+        self.assertTrue(bench._skill_used(tools, "pr"))
+        self.assertFalse(bench._skill_used(tools, "grilling"))
+        read = [{"type": "tool_use", "name": "Read", "input": {"file_path": "/w/.claude/skills/grilling/SKILL.md"}}]
+        self.assertTrue(bench._skill_used(read, "grilling"))
+
+    # ------------------------------------------------------------ skills with their own checker
+    def test_a_skills_checker_is_part_of_its_version(self):
+        name = "caveman-commit"
+        f = bench.SKILLS / name / "cases" / "check.py"
+        before, text = bench.version(name), f.read_text(encoding="utf-8")
+        try:
+            f.write_text(text + "\n# changed\n", encoding="utf-8")
+            self.assertNotEqual(bench.version(name), before)
+        finally:
+            f.write_text(text, encoding="utf-8")
+        self.assertEqual(bench.version(name), before)
+
+    def test_a_supporting_file_of_the_skill_is_part_of_its_version(self):
+        name = "internal-comms"
+        f = bench.SKILLS / name / "examples" / "3p-updates.md"
+        before, text = bench.version(name), f.read_text(encoding="utf-8")
+        try:
+            f.write_text(text + "\nchanged\n", encoding="utf-8")
+            self.assertNotEqual(bench.version(name), before)
+        finally:
+            f.write_text(text, encoding="utf-8")
+
+    def test_a_checker_that_breaks_on_odd_output_fails_the_case_instead_of_the_run(self):
+        case = bench.case_dirs("writing-plans")[0]
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "plan.md").write_bytes(b"\xff\xfe not utf-8")
+            r = bench.checks.grade(bench.expect_of(case), tmp)
+        self.assertFalse(all(r.values()))
+
+    def test_imported_skills_name_their_source_and_licence(self):
+        for name in bench.skill_names():
+            meta = bench.skill_meta(name)
+            if meta["author"] != "opencolony-ai":
+                self.assertTrue(meta.get("source", "").startswith("https://github.com/"), name)
+                self.assertIn(meta.get("license"), ("MIT", "Apache-2.0"), name)
+                self.assertTrue(any((bench.SKILLS / name / f).is_file() for f in ("LICENSE", "LICENSE.txt")), name)
 
     # ------------------------------------------------------------ verify
     def test_verify_accepts_an_honest_result_and_regrades_the_outputs(self):
@@ -146,7 +200,7 @@ class Bench(unittest.TestCase):
             text = (self.tmp / "LEADERBOARD.md").read_text()
         finally:
             bench.ROOT = old
-        self.assertIn(f"| [{SKILL}](skills/{SKILL}/SKILL.md) | ✅ consistent | 0/3 | 3/3 | +3 | 3/3 |", text)
+        self.assertIn(f"| [{SKILL}](skills/{SKILL}/SKILL.md) | ✅ consistent | 0/3 | 3/3 | +3 | 3/3 runs | 3/3 |", text)
         for n in bench.skill_names():
             self.assertIn(f"[{n}]", text)
 

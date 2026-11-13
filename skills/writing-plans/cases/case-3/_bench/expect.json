@@ -1,0 +1,25 @@
+{
+ "check": "script",
+ "constraints": [
+  [
+   "Go 1.22"
+  ],
+  [
+   "third-party",
+   "no external",
+   "standard library",
+   "stdlib"
+  ]
+ ],
+ "values": [
+  [
+   "10,000",
+   "10000",
+   "10_000"
+  ],
+  [
+   "imported N, duplicates D, rejected R",
+   "imported %d, duplicates %d, rejected %d"
+  ]
+ ]
+}

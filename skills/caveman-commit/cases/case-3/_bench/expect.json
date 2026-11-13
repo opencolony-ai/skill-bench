@@ -1,0 +1,8 @@
+{
+ "check": "script",
+ "types": [
+  "perf",
+  "refactor"
+ ],
+ "breaking": false
+}

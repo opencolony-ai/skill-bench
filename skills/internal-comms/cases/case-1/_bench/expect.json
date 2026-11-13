@@ -1,0 +1,20 @@
+{
+ "check": "script",
+ "team": "Payments Platform",
+ "dates": [
+  "Nov 3",
+  "November 3",
+  "3 Nov",
+  "11/3",
+  "2026-11-03"
+ ],
+ "facts": [
+  [
+   "98.1"
+  ],
+  [
+   "Google Pay",
+   "google pay"
+  ]
+ ]
+}

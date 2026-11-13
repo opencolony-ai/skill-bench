@@ -1,0 +1,24 @@
+{
+ "check": "script",
+ "constraints": [
+  [
+   "3.11"
+  ],
+  [
+   "standard library",
+   "stdlib",
+   "no new dependencies"
+  ]
+ ],
+ "values": [
+  [
+   "links.db"
+  ],
+  [
+   "ShortenError"
+  ],
+  [
+   "7"
+  ]
+ ]
+}

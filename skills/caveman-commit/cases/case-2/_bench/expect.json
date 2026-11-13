@@ -1,0 +1,9 @@
+{
+ "check": "script",
+ "types": [
+  "feat",
+  "refactor",
+  "fix"
+ ],
+ "breaking": true
+}

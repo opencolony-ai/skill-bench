@@ -138,7 +138,21 @@ def exact_answer(folder: Path, e: dict) -> dict:
     return {"answer": t is not None and t.strip().replace(" ", "").lower() == str(e["answer"]).lower()}
 
 
-KINDS = {"commit_message": commit_message, "changelog": changelog, "customer_csv": customer_csv,
+def script(folder: Path, e: dict) -> dict:
+    """A skill's own checker: skills/<name>/cases/check.py defines check(folder, expect) -> {name: bool}.
+    It reads the files the agent wrote and never runs them. Like this file, it is reviewed in the pull
+    request that adds the skill, and results are re-graded with the copy on main."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("case_check_" + Path(e["_script"]).parent.parent.name, e["_script"])
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    try:
+        return {k: bool(v) for k, v in mod.check(Path(folder), e).items()}
+    except Exception as x:  # odd output is a failed case, not a crashed run
+        return {"checker_ran": False, f"error: {type(x).__name__}": False}
+
+
+KINDS = {"script": script, "commit_message": commit_message, "changelog": changelog, "customer_csv": customer_csv,
          "cited_summary": cited_summary, "exact_answer": exact_answer}
 
 

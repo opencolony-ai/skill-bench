@@ -1,0 +1,4 @@
+refactor(client)!: take timeout_ms instead of timeout
+
+BREAKING CHANGE: Client(timeout=...) is removed. Pass timeout_ms in
+milliseconds.

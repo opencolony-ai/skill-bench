@@ -1,0 +1,25 @@
+{
+ "check": "script",
+ "constraints": [
+  [
+   "Node 20"
+  ],
+  [
+   "TypeScript"
+  ]
+ ],
+ "values": [
+  [
+   "429"
+  ],
+  [
+   "Retry-After"
+  ],
+  [
+   "100"
+  ],
+  [
+   "/healthz"
+  ]
+ ]
+}

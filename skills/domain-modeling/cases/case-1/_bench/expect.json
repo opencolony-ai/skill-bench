@@ -1,0 +1,23 @@
+{
+ "check": "script",
+ "avoid": {
+  "Shipment": [
+   "delivery",
+   "parcel"
+  ],
+  "Package": [
+   "box",
+   "carton"
+  ],
+  "Carrier": [
+   "courier",
+   "shipper"
+  ]
+ },
+ "general": [
+  "Retry",
+  "Backoff",
+  "Exponential backoff",
+  "Webhook"
+ ]
+}

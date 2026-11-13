@@ -1,0 +1,3 @@
+fix(cart): handle cart without coupon in total
+
+Closes #214

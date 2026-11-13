@@ -27,7 +27,11 @@ Then open a pull request with the one file it wrote under `results/`. CI checks 
 
 - `next` picks the skill for you. You cannot pick, and you never get your own skill or one you already verified.
 - `run` does everything in your system's temp folder, outside this repository, so no `CLAUDE.md` or
-  skill from here leaks in. Claude may only read and write files there: no shell, no web.
+  skill from here leaks in. Your own skills, plugins and MCP servers stay out too (Claude Code runs without
+  your user settings), so both runs see only Claude Code's built-in skills, plus the one being measured.
+  Claude may only read and write files there: no shell, no web.
+- Each result records which tools Claude called and whether it opened the skill at all. A skill that
+  Claude never opens cannot help, and the leaderboard says how often that happened.
 - One verification is two Claude Code runs. Measured on `conventional-commit` (3 cases, Sonnet):
   about 35 seconds and US$0.29 at API prices; on a subscription it uses your plan's allowance.
 - What Claude wrote for each case goes into the result, so anyone can re-grade it. Test cases are public.
@@ -45,7 +49,8 @@ Then open a pull request with the one file it wrote under `results/`. CI checks 
   between independent people is the safeguard.
 - Results are re-graded in CI from the files Claude wrote, using the checks on the main branch, never the ones in the pull request.
 - A run that the environment stopped (for example a refused permission) is recorded as "could not run", not as a failure.
-- Changing a skill or any of its cases gives it a new version; results for older versions stop counting.
+- Changing a skill (any file in its folder), any of its cases or its checker gives it a new version; results for
+  older versions stop counting.
 
 ## Add a skill
 
@@ -53,7 +58,8 @@ A skill is a folder under `skills/`:
 
 ```
 skills/<name>/SKILL.md          the skill, in the Agent Skills format
-skills/<name>/skill.json        {"author": "<your-github-name>"}
+skills/<name>/skill.json        {"author": "<your-github-name>"}, plus "source" and "license" for a skill you did not write
+skills/<name>/cases/check.py              optional: this skill's own checker (expect.json then says "check": "script")
 skills/<name>/cases/<case>/task.md        what Claude is asked to do
 skills/<name>/cases/<case>/...            input files
 skills/<name>/cases/<case>/_bench/expect.json   which check, and what it expects (Claude never sees _bench/)
@@ -63,7 +69,11 @@ skills/<name>/cases/<case>/_bench/trivial*/     answers that must fail
 
 - Write at least three cases. Good cases are small, need what the skill teaches, and are graded by a program.
 - `python bench.py check-cases` must pass: every `ref*` answer passes and every `trivial*` answer fails.
-- Checks live in `checks.py`. A new kind of check is a pull request to that file.
+- Checks live in `checks.py`, or in the skill's own `cases/check.py`: `check(folder, expect)` returns
+  `{check name: passed}`. It reads the files Claude wrote and never runs them. Either one is reviewed like code,
+  and results are always re-graded with the copy on the main branch.
+- A skill you did not write keeps its author, its source (repository and commit) and its licence file. Its author
+  is the upstream owner, who therefore cannot verify it.
 - `commit-tips` is a deliberately vague control skill that reuses the `conventional-commit` cases: it shows what "no effect" looks like.
 
 ## Where this comes from

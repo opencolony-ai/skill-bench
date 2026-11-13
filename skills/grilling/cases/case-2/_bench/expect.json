@@ -1,0 +1,13 @@
+{
+ "check": "script",
+ "topics": [
+  [
+   "seat"
+  ],
+  [
+   "grandfather",
+   "existing customer",
+   "existing customers"
+  ]
+ ]
+}

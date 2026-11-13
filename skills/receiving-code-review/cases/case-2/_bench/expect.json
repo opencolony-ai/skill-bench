@@ -1,0 +1,7 @@
+{
+ "check": "script",
+ "evidence": [
+  "undefined"
+ ],
+ "unused": "fetchLegacyRates"
+}

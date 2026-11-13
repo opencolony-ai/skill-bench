@@ -25,4 +25,7 @@ python bench.py submit <它印出的資料夾> --user <你的 GitHub 帳號>
 - 一次驗證是兩次 Claude Code 執行。實測 `conventional-commit`（3 個案例、Sonnet）：約 35 秒、API 價格約 0.29 美元；用訂閱的話會用掉你方案的額度。
 - **模型不經驗證**，靠多人一致把關。
 
+- 執行時不載入你自己的技能、外掛和 MCP 伺服器，兩次都只看得到 Claude Code 內建的技能，加上這次要量的那一個。
+- 每筆結果會記錄 Claude 呼叫了哪些工具、有沒有打開這個技能。Claude 根本沒打開的技能幫不上忙，排行榜會列出發生幾次。
+
 規則與新增技能的方法見 [README.md](README.md)。

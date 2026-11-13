@@ -1,0 +1,26 @@
+{
+ "check": "script",
+ "avoid": {
+  "Appointment": [
+   "booking",
+   "visit"
+  ],
+  "Slot": [
+   "opening",
+   "availability"
+  ],
+  "Patient": [
+   "client",
+   "customer"
+  ],
+  "Practitioner": [
+   "doctor",
+   "provider"
+  ]
+ },
+ "general": [
+  "Cache",
+  "TTL",
+  "Endpoint"
+ ]
+}

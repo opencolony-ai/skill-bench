@@ -72,16 +72,22 @@ def _files(d: Path) -> list[Path]:
 
 
 def version(name: str) -> str:
-    """Changes when the skill or any of its cases changes: results for an older version stop counting."""
+    """Changes when the skill (any of its files), its cases or its case checker changes: results for an
+    older version stop counting."""
     h = hashlib.sha256()
     d = SKILLS / name
-    for p in [d / "SKILL.md"] + [q for c in case_dirs(name) for q in _files(c)]:
+    own = [q for q in _files(d) if q.name != "skill.json" and "cases" not in q.relative_to(d).parts]
+    src = SKILLS / skill_meta(name)["cases_from"] / "cases"
+    for p in own + [q for c in case_dirs(name) for q in _files(c)] + [q for q in [src / "check.py"] if q.is_file()]:
         h.update(str(p.relative_to(SKILLS)).encode() + b"\0" + p.read_bytes() + b"\0")
     return h.hexdigest()[:12]
 
 
 def expect_of(case: Path) -> dict:
-    return json.loads((case / "_bench" / "expect.json").read_text(encoding="utf-8"))
+    e = json.loads((case / "_bench" / "expect.json").read_text(encoding="utf-8"))
+    if e.get("check") == "script":  # the skill's own checker, cases/check.py, reviewed like checks.py
+        e["_script"] = str(case.parent / "check.py")
+    return e
 
 
 def copy_inputs(case: Path, dest: Path) -> None:
@@ -137,6 +143,8 @@ def standing(name: str) -> dict:
     toks = [r.get("arms", {}).get("skill", {}).get("usage", {}).get("total_tokens") for r in runs]
     toks = [t for t in toks if isinstance(t, (int, float))]
     out["tokens_median"] = statistics.median(toks) if toks else None
+    used = [r.get("arms", {}).get("skill", {}).get("skill_used") for r in runs]
+    out["used"] = sum(1 for u in used if u is True)  # runs in which Claude opened the skill at all
     agree = all(abs(x - ma) <= TOLERANCE for x in a) and all(abs(x - mb) <= TOLERANCE for x in b)
     if len(runs) < NEED:
         out["status"] = "self-reported"
@@ -190,6 +198,40 @@ def _usage(js: dict) -> dict:
             "permission_denials": len(js.get("permission_denials") or [])}
 
 
+def _read_stream(text: str) -> tuple[dict, list[dict]]:
+    """Claude Code's stream-json: the final `result` event, and every tool call on the way."""
+    result, tools = {}, []
+    for line in text.splitlines():
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if ev.get("type") == "result":
+            result = ev
+        elif ev.get("type") == "assistant":
+            tools += [c for c in (ev.get("message") or {}).get("content") or []
+                      if isinstance(c, dict) and c.get("type") == "tool_use"]
+    return result, tools
+
+
+def _tool_counts(tools: list[dict]) -> dict:
+    out = {}
+    for t in tools:
+        out[t.get("name", "?")] = out.get(t.get("name", "?"), 0) + 1
+    return out
+
+
+def _skill_used(tools: list[dict], name: str) -> bool:
+    """Claude invoked the skill, or opened its files: whether it was used at all, not how well."""
+    for t in tools:
+        i = t.get("input") or {}
+        if t.get("name") == "Skill" and str(i.get("skill", "")).split(":")[-1] == name:
+            return True
+        if f".claude/skills/{name}/" in json.dumps(i):
+            return True
+    return False
+
+
 def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: int) -> dict:
     where.mkdir(parents=True)
     for c in case_dirs(name):
@@ -202,19 +244,22 @@ def run_arm(name: str, arm: str, where: Path, model: str, claude: str, timeout: 
             if p.name not in ("cases", "skill.json"):
                 (shutil.copytree if p.is_dir() else shutil.copy2)(p, dst / p.name)
     # Files only: no shell, no web. Both arms work under the same rules, and a skill from a stranger
-    # cannot make Claude run commands on the verifier's computer.
-    cmd = [claude, "-p", PROMPT, "--output-format", "json", "--model", model,
-           "--permission-mode", "acceptEdits", "--max-turns", "60",
-           "--disallowedTools", "Bash", "WebFetch", "WebSearch"]
+    # cannot make Claude run commands on the verifier's computer. The verifier's own skills, plugins
+    # and MCP servers stay out (user settings are not loaded), so both arms see only Claude Code's
+    # built-in skills, plus this skill in the skill arm.
+    cmd = [claude, "-p", PROMPT, "--output-format", "stream-json", "--verbose", "--model", model,
+           "--permission-mode", "acceptEdits", "--max-turns", "60", "--setting-sources", "project,local",
+           "--strict-mcp-config", "--disallowedTools", "Bash", "WebFetch", "WebSearch"]
     started = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     try:
         p = subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=timeout)
-        js = json.loads(p.stdout) if p.stdout.strip().startswith("{") else {}
-        ok = p.returncode == 0 and not js.get("is_error")
+        js, tools = _read_stream(p.stdout)
+        ok = p.returncode == 0 and bool(js) and not js.get("is_error")
         err = None if ok else (js.get("result") or p.stderr or f"exit {p.returncode}")[-500:]
     except (OSError, subprocess.TimeoutExpired) as e:
-        js, ok, err = {}, False, str(e)[-500:]
-    out = {"started": started, "usage": _usage(js), "cases": grade_arm(name, where)}
+        js, tools, ok, err = {}, [], False, str(e)[-500:]
+    out = {"started": started, "usage": _usage(js), "tools": _tool_counts(tools),
+           "skill_used": _skill_used(tools, name), "cases": grade_arm(name, where)}
     wrote = any(c["outputs"] for c in out["cases"].values())
     if not wrote and (not ok or out["usage"]["permission_denials"]):
         # nothing came of it and the tool refused it something: the environment, not the skill
@@ -395,19 +440,22 @@ def cmd_board(a) -> None:
            "their own Claude Code, without and with the skill. A result counts when at least "
            f"{NEED} people other than the author agree within {TOLERANCE} case. "
            "**The model is reported by each verifier and not checked.**", "",
-           "| Skill | Status | Without skill | With skill | Effect | Verifiers | Tokens (median, with skill) |",
-           "| --- | --- | --- | --- | --- | --- | --- |"]
+           "| Skill | Status | Without skill | With skill | Effect | Claude used it | Verifiers | Tokens (median, with skill) |",
+           "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     for s in rows:
         n = s["cases"]
         cell = (lambda k: f"{s[k]:g}/{n}") if "effect" in s else (lambda k: "-")
         eff = f"{s['effect']:+g}" if "effect" in s else "-"
         tok = f"{s['tokens_median']:,.0f}" if s.get("tokens_median") else "-"
+        used = f"{s['used']}/{s['verifiers']} runs" if "effect" in s else "-"
         out.append(f"| [{s['skill']}](skills/{s['skill']}/SKILL.md) | {STATUS_WORDS[s['status']]} | {cell('none_median')} | "
-                   f"{cell('skill_median')} | {eff} | {s['verifiers']}/{NEED} | {tok} |")
+                   f"{cell('skill_median')} | {eff} | {used} | {s['verifiers']}/{NEED} | {tok} |")
     out += ["", "- ✅ consistent: enough independent verifiers, and they agree.",
             "- ⚠️ disputed: verifiers disagree; more are being asked.",
             "- ➖ no signal: Claude already passes these cases without the skill, so they cannot show what it adds.",
-            "- 🕓 self-reported: fewer than " + str(NEED) + " verifiers so far.", ""]
+            "- 🕓 self-reported: fewer than " + str(NEED) + " verifiers so far.",
+            "- Claude used it: in how many runs with the skill installed Claude opened it at all. A skill it never "
+            "opens cannot help, however good its text.", ""]
     text = "\n".join(out)
     if a.check:
         if (ROOT / "LEADERBOARD.md").read_text(encoding="utf-8") != text:

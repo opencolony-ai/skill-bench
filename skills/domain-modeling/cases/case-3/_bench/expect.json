@@ -1,0 +1,29 @@
+{
+ "check": "script",
+ "avoid": {
+  "Title": [
+   "book"
+  ],
+  "Copy": [
+   "item",
+   "volume"
+  ],
+  "Loan": [
+   "checkout",
+   "borrowing"
+  ],
+  "Hold": [
+   "reservation",
+   "request"
+  ],
+  "Member": [
+   "patron",
+   "user"
+  ]
+ },
+ "general": [
+  "Pagination",
+  "Cursor pagination",
+  "Rate limit"
+ ]
+}

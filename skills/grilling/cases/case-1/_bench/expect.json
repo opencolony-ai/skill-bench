@@ -1,0 +1,13 @@
+{
+ "check": "script",
+ "topics": [
+  [
+   "postgres",
+   "mysql"
+  ],
+  [
+   "rollback",
+   "roll back"
+  ]
+ ]
+}

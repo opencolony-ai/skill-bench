@@ -1,0 +1,1 @@
+Fixed the crash in cart_total when there is no coupon.

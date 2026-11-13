@@ -1,0 +1,13 @@
+{
+ "check": "script",
+ "topics": [
+  [
+   "offline",
+   "sync",
+   "conflict"
+  ],
+  [
+   "photo"
+  ]
+ ]
+}
