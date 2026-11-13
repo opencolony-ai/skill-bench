@@ -1,0 +1,31 @@
+[
+  {
+    "number": 211,
+    "title": "Add Apple Pay",
+    "labels": [
+      "feature"
+    ]
+  },
+  {
+    "number": 210,
+    "title": "Remove legacy PayPal checkout",
+    "labels": [
+      "removal",
+      "feature"
+    ]
+  },
+  {
+    "number": 212,
+    "title": "Cache dependencies in CI",
+    "labels": [
+      "ci"
+    ]
+  },
+  {
+    "number": 209,
+    "title": "Add saved addresses",
+    "labels": [
+      "feature"
+    ]
+  }
+]

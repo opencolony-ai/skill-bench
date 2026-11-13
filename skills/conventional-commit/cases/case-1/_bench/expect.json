@@ -1,0 +1,9 @@
+{
+ "check": "commit_message",
+ "ticket": "PAY-142",
+ "types": [
+  "feat"
+ ],
+ "scope": "api",
+ "breaking": false
+}

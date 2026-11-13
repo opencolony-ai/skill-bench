@@ -1,0 +1,7 @@
+id,name,email,phone,signup_date,updated_at
+21,Lee   Ann,ann.lee@example.com,02-2711-2711,11/11/2025,01/12/2025
+22,Pan Hao,Hao.Pan@Example.com,0988123456,04/06/2026,04/06/2026
+23,Lee Ann,ANN.LEE@example.com,0227112711,11/11/2025,20/10/2025
+24,Fu Ming,fu.ming@example.com,+886-911-000-222,30/01/2026,02/02/2026
+25,No Mail,,,01/01/2026,01/01/2026
+26,Pan Hao,hao.pan@example.com,0988 123 456,04/06/2026,09/06/2026

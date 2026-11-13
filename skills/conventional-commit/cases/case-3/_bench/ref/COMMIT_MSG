@@ -1,0 +1,8 @@
+feat(api)!: use snake_case for order response fields
+
+The public API mixed camelCase and snake_case. Orders now return
+customer_id and created_at like every other resource.
+
+BREAKING CHANGE: read customer_id and created_at instead of customerId
+and createdAt in order responses.
+Refs: API-310

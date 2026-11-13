@@ -1,0 +1,7 @@
+id,name,email,phone,signup_date,updated_at
+1, Lin  Mei-Hua ,MeiHua.Lin@Example.com,0912 345 678,03/04/2026,05/04/2026
+2,Chen Wei,chen.wei@example.com,+886 922 111 222,2026-01-15,2026-02-01
+3,Wang Jie,,0933-222-111,12/02/2026,12/02/2026
+4,Lin Mei Hua, meihua.lin@example.com ,0912345678,03/04/2026,11/05/2026
+5,Huang Yu,huang.yu@example.com,(02) 2345-6789,07-03-2026,08-03-2026
+6,Tsai Ann,ann.tsai@example.com,987654321,25/12/2025,02/01/2026

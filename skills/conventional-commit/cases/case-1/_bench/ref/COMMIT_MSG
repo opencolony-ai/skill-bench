@@ -1,0 +1,7 @@
+feat(api): add endpoint to refund captured payments
+
+Support asked for partial refunds without going through the payment
+provider's dashboard. The endpoint refuses refunds above the captured
+total so a typo cannot pay out more than was taken.
+
+Refs: PAY-142

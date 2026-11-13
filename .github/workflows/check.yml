@@ -1,0 +1,56 @@
+name: check
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+
+jobs:
+  tool:
+    name: tool and cases
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s tests -v
+      - run: python bench.py check-cases
+
+  results:
+    # Result files from the pull request, checked with the tool, skills and checks from the base
+    # branch: a pull request cannot change how its own result is graded.
+    name: results
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: head
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: verify the results this pull request adds
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          cd head
+          changed=$(git diff --name-only --diff-filter=AM "$BASE" HEAD)
+          results=$(printf '%s\n' "$changed" | grep '^results/.*\.json$' || true)
+          if [ -z "$results" ]; then echo "no result files in this pull request"; exit 0; fi
+          others=$(printf '%s\n' "$changed" | grep -v '^results/' || true)
+          if [ -n "$others" ]; then
+            echo "a pull request with results may contain only files under results/; also changed:"
+            printf '%s\n' "$others"
+            exit 1
+          fi
+          cd ../base
+          python bench.py verify $(printf '../head/%s ' $results) --author "$AUTHOR"

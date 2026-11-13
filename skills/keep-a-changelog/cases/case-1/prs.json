@@ -1,0 +1,31 @@
+[
+  {
+    "number": 201,
+    "title": "Add gift cards",
+    "labels": [
+      "feature"
+    ]
+  },
+  {
+    "number": 202,
+    "title": "Fix tax rounding on refunds.",
+    "labels": [
+      "bug"
+    ]
+  },
+  {
+    "number": 203,
+    "title": "Bump CI image",
+    "labels": [
+      "internal"
+    ]
+  },
+  {
+    "number": 204,
+    "title": "Escape HTML in product reviews",
+    "labels": [
+      "bug",
+      "security"
+    ]
+  }
+]

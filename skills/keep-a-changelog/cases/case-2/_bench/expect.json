@@ -1,0 +1,22 @@
+{
+ "check": "changelog",
+ "released_heading": "## [1.4.0]",
+ "must_not_appear": [
+  "Bump CI image",
+  "Document webhooks",
+  "Cache dependencies in CI"
+ ],
+ "sections": {
+  "Changed": [
+   "- Speed up the search results page ([#205](https://github.com/acme/shop/pull/205))"
+  ],
+  "Deprecated": [
+   "- Deprecate the v1 orders API ([#208](https://github.com/acme/shop/pull/208))"
+  ],
+  "Fixed": [
+   "- Fix cart badge count ([#190](https://github.com/acme/shop/pull/190))",
+   "- Fix coupon stacking ([#206](https://github.com/acme/shop/pull/206))"
+  ]
+ },
+ "released": "## [1.4.0] - 2026-10-01\n### Added\n- Add wishlists ([#180](https://github.com/acme/shop/pull/180))\n### Fixed\n- Fix currency symbol on invoices ([#176](https://github.com/acme/shop/pull/176))\n\n## [1.3.2] - 2026-09-12\n### Fixed\n- Fix crash when a cart is empty ([#171](https://github.com/acme/shop/pull/171))\n"
+}

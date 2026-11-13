@@ -1,0 +1,7 @@
+fix(web): compare token expiry in milliseconds
+
+The exp claim is in seconds but was compared with Date.now() in
+milliseconds, so every token counted as expired and users were signed
+out on each page load.
+
+Refs: AUTH-77

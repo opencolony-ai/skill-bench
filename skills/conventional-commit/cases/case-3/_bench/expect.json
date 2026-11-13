@@ -1,0 +1,10 @@
+{
+ "check": "commit_message",
+ "ticket": "API-310",
+ "types": [
+  "feat",
+  "refactor"
+ ],
+ "scope": "api",
+ "breaking": true
+}

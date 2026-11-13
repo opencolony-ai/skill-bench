@@ -1,0 +1,11 @@
+{
+ "check": "cited_summary",
+ "facts": [
+  "1,200",
+  "62.0%",
+  "11.0%"
+ ],
+ "files": [
+  "survey.md"
+ ]
+}

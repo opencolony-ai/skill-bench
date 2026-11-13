@@ -1,0 +1,24 @@
+name: leaderboard
+on:
+  push:
+    branches: [main]
+    paths: ["results/**", "skills/**", "bench.py", "checks.py"]
+permissions:
+  contents: write
+
+jobs:
+  board:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python bench.py board
+      - name: commit the leaderboard if it changed
+        run: |
+          if git diff --quiet LEADERBOARD.md; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update the leaderboard" LEADERBOARD.md
+          git push

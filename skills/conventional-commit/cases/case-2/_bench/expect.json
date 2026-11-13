@@ -1,0 +1,9 @@
+{
+ "check": "commit_message",
+ "ticket": "AUTH-77",
+ "types": [
+  "fix"
+ ],
+ "scope": "web",
+ "breaking": false
+}

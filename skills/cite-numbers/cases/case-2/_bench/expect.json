@@ -1,0 +1,12 @@
+{
+ "check": "cited_summary",
+ "facts": [
+  "36",
+  "501.7",
+  "71.8%"
+ ],
+ "files": [
+  "stores.md",
+  "people.md"
+ ]
+}

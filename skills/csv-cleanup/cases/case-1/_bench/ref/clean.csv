@@ -1,0 +1,5 @@
+id,name,email,phone,signup_date,updated_at
+2,Chen Wei,chen.wei@example.com,+886922111222,2026-01-15,2026-02-01
+4,Lin Mei Hua,meihua.lin@example.com,+886912345678,2026-04-03,2026-05-11
+5,Huang Yu,huang.yu@example.com,+886223456789,2026-03-07,2026-03-08
+6,Tsai Ann,ann.tsai@example.com,+886987654321,2025-12-25,2026-01-02

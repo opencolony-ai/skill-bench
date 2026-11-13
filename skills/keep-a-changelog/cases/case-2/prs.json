@@ -1,0 +1,30 @@
+[
+  {
+    "number": 206,
+    "title": "Fix coupon stacking",
+    "labels": [
+      "bug"
+    ]
+  },
+  {
+    "number": 205,
+    "title": "Speed up the search results page",
+    "labels": [
+      "enhancement"
+    ]
+  },
+  {
+    "number": 207,
+    "title": "Document webhooks",
+    "labels": [
+      "docs"
+    ]
+  },
+  {
+    "number": 208,
+    "title": "Deprecate the v1 orders API",
+    "labels": [
+      "deprecation"
+    ]
+  }
+]

@@ -1,0 +1,51 @@
+{
+ "check": "customer_csv",
+ "columns": [
+  "id",
+  "name",
+  "email",
+  "phone",
+  "signup_date",
+  "updated_at"
+ ],
+ "rows": [
+  {
+   "id": "2",
+   "name": "Chen Wei",
+   "email": "chen.wei@example.com",
+   "phone": "+886922111222",
+   "signup_date": "2026-01-15",
+   "updated_at": "2026-02-01"
+  },
+  {
+   "id": "4",
+   "name": "Lin Mei Hua",
+   "email": "meihua.lin@example.com",
+   "phone": "+886912345678",
+   "signup_date": "2026-04-03",
+   "updated_at": "2026-05-11"
+  },
+  {
+   "id": "5",
+   "name": "Huang Yu",
+   "email": "huang.yu@example.com",
+   "phone": "+886223456789",
+   "signup_date": "2026-03-07",
+   "updated_at": "2026-03-08"
+  },
+  {
+   "id": "6",
+   "name": "Tsai Ann",
+   "email": "ann.tsai@example.com",
+   "phone": "+886987654321",
+   "signup_date": "2025-12-25",
+   "updated_at": "2026-01-02"
+  }
+ ],
+ "log": {
+  "input_rows": 6,
+  "dropped_no_email": 1,
+  "duplicates_removed": 1,
+  "output_rows": 4
+ }
+}

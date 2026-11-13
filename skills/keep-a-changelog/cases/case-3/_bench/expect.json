@@ -1,0 +1,19 @@
+{
+ "check": "changelog",
+ "released_heading": "## [1.4.0]",
+ "must_not_appear": [
+  "Bump CI image",
+  "Document webhooks",
+  "Cache dependencies in CI"
+ ],
+ "sections": {
+  "Added": [
+   "- Add saved addresses ([#209](https://github.com/acme/shop/pull/209))",
+   "- Add Apple Pay ([#211](https://github.com/acme/shop/pull/211))"
+  ],
+  "Removed": [
+   "- Remove legacy PayPal checkout ([#210](https://github.com/acme/shop/pull/210))"
+  ]
+ },
+ "released": "## [1.4.0] - 2026-10-01\n### Added\n- Add wishlists ([#180](https://github.com/acme/shop/pull/180))\n### Fixed\n- Fix currency symbol on invoices ([#176](https://github.com/acme/shop/pull/176))\n\n## [1.3.2] - 2026-09-12\n### Fixed\n- Fix crash when a cart is empty ([#171](https://github.com/acme/shop/pull/171))\n"
+}
